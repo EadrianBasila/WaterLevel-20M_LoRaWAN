@@ -1,0 +1,10 @@
+../Application/User/Core/PWX_ModbusDevice.c:46:10:bytesToUInt16	1
+../Application/User/Core/PWX_ModbusDevice.c:50:6:convertUint16ToUint8	3
+../Application/User/Core/PWX_ModbusDevice.c:176:6:initModbusParameters	2
+../Application/User/Core/PWX_ModbusDevice.c:57:6:scanModbusDevice	10
+../Application/User/Core/PWX_ModbusDevice.c:218:8:buildDataToSend	2
+../Application/User/Core/PWX_ModbusDevice.c:231:6:initArray	2
+../Application/User/Core/PWX_ModbusDevice.c:238:6:clearModbusParams	4
+../Application/User/Core/PWX_ModbusDevice.c:273:6:showMonitoringSlotParams	5
+../Application/User/Core/PWX_ModbusDevice.c:298:6:initMonitoringSlotParams	5
+../Application/User/Core/PWX_ModbusDevice.c:365:6:viewMonitoringSlotParams	2
