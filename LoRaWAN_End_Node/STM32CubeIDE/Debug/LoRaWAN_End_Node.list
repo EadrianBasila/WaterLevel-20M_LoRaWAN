@@ -13051,7 +13051,7 @@ void fetchLTCData(void){
  8006866:	4621      	mov	r1, r4
  8006868:	2002      	movs	r0, #2
  800686a:	f00e ff6b 	bl	8015744 <UTIL_ADV_TRACE_COND_FSend>
-  APP_LOG(TS_OFF, VLEVEL_M, " Firmware: Water Level 20M 	Ver.: 1.0.1		Rev. Date: 7-18-24\r\n");
+  APP_LOG(TS_OFF, VLEVEL_M, " Firmware: Water Level 20M 	Ver.: 1.0.1		Rev. Date: 7-23-24\r\n");
  800686e:	4b61      	ldr	r3, [pc, #388]	; (80069f4 <LoRaWAN_Init+0x1e4>)
  8006870:	4622      	mov	r2, r4
  8006872:	4621      	mov	r1, r4

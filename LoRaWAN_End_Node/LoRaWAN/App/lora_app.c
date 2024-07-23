@@ -964,7 +964,7 @@ void LoRaWAN_Init(void)
   APP_LOG(TS_OFF, VLEVEL_M, " |  __/ (_| | (__|   <  __/ |_ \\ V  V / (_) | |   >  <   | || | | | (__ _  \r\n");
   APP_LOG(TS_OFF, VLEVEL_M, " |_|   \\__,_|\\___|_|\\_\\___|\\__| \\_/\\_/ \\___/|_|  /_/\\_\\ |___|_| |_|\\___(_) \r\n");
   APP_LOG(TS_OFF, VLEVEL_M, "\r\n");
-  APP_LOG(TS_OFF, VLEVEL_M, " Firmware: Water Level 20M 	Ver.: 1.0.1		Rev. Date: 7-18-24\r\n");
+  APP_LOG(TS_OFF, VLEVEL_M, " Firmware: Water Level 20M 	Ver.: 1.0.1		Rev. Date: 7-23-24\r\n");
   APP_LOG(TS_OFF, VLEVEL_M, "\r\n");
 
   waterLevelSamples = (float*)malloc(sizeof(int)*MAX_WATER_LEVEL_SAMPLES);
