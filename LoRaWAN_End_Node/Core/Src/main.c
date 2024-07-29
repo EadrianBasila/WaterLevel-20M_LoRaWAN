@@ -136,6 +136,8 @@ int main(void)
   uint32_t startMillis = HAL_GetTick();
   uint32_t printMillis = HAL_GetTick();
 
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
 
   if (FLASH_IF_Read(&DeviceParamsNVM, LORAWAN_NVM_BASE_ADDRESS, sizeof(DeviceParamsNVM)) == FLASH_IF_OK) {
 	  APP_LOG( TS_OFF, VLEVEL_M, "MODBUS Heart Beat Interval: %u ms \r\n", DeviceParamsNVM.pwxHeartbeatInterval );

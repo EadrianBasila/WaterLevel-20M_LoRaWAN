@@ -644,7 +644,7 @@ SecureElementStatus_t SecureElementInit( SecureElementNvmData_t *nvm )
 		MW_LOG( TS_OFF, VLEVEL_M, "###### Sampling Counts before TX: %u \r\n", MAX_WATER_LEVEL_SAMPLES);
 
 		if(FlashNVM.pwxWaterLevelThreshold != 0 && FlashNVM.pwxWaterLevelThreshold != 65535){
-			thresholdLevel = FlashNVM.pwxWaterLevelThreshold/100;
+			thresholdLevel = FlashNVM.pwxWaterLevelThreshold;
 		}
 		MW_LOG( TS_OFF, VLEVEL_M, "###### Water Level Threshold: %u \r\n", thresholdLevel);
 

@@ -88,6 +88,8 @@ void sendRaw(uint8_t *modbusCMD, uint16_t cmdLen, ModBus_t *modbusResponse) {
 
 	// Enable MODBUS_EN
 	HAL_GPIO_WritePin(MODBUS_EN.port, MODBUS_EN.pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);  // ADDED FOR WATER LEVEL ONLY REMOVE THISSS
+
 
 	// Receive data using UART interrupt
 	HAL_UART_Receive_IT(&modbusSerial, (uint8_t *)modbusResponse->buffer, 1);
@@ -106,6 +108,7 @@ void sendRaw(uint8_t *modbusCMD, uint16_t cmdLen, ModBus_t *modbusResponse) {
 
 	// Disable MODBUS_EN
 	HAL_GPIO_WritePin(MODBUS_EN.port, MODBUS_EN.pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);  // ADDED FOR WATER LEVEL ONLY REMOVE THISSS
 
 	// Delay for stability
 	HAL_Delay(1);
