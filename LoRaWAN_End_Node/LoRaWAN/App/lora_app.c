@@ -51,13 +51,6 @@
 /* External variables ---------------------------------------------------------*/
 /* USER CODE BEGIN EV */
 
-//FOR TESTING PURPOSES ONLY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-// Array of numbers from 1 to 30 in random order
-static const uint32_t randomNumbers[30] = {5, 6, 1, 4, 8, 5, 1, 9, 4, 7, 4, 2, 9, 8, 5, 5, 19, 6, 9, 2, 4, 20, 5, 3, 1, 2, 5, 7, 20, 1};
-uint32_t number;
-//FOR TESTING PURPOSES ONLY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 /**
   * @brief LoRaWAN handler parameters for Confirmed Uplink
   */
@@ -78,8 +71,12 @@ static LmHandlerParams_t LmHandlerParamsConfirmed =
 //int TRANSMIT_INTERVAL_MS        = 60000; 	// 1 minute/s in milliseconds
 
 bool hasJoined 					= false;
-int transmissionType			= 0;		// 0: Scheduled	- 1: Unscheduled
+int transmissionType			= 0;		// 0: Scheduled	; 1: Unscheduled ; 2: System Diagnostic
 bool skipScheduledTransmission	= false;
+bool sendSystemDiagnostic		= false;
+bool isLevelBreached			= false;
+bool isModbusDefective			= false;
+uint8_t systemDiagnostic 		= 0;
 
 //! LTC Variables
 float VBAT 					= 0.0;
@@ -93,16 +90,15 @@ bool isInit  				= true;
 
 
 //! Water Level 20m Variables
-int sensingMode					= 0;	// 0: Median,	1: Absolute,	2: Differential
 int readingCount 				= 10;
+int continuousCounter			= 0;	// Should reach 2 before going back to normal
+bool continuousMode				= false;
 
 float waterLevel 				= 0.0;
 float waterLevelMin				= 0.0;
 float waterLevelMax				= 0.0;
 float waterLevelLatest			= 0.0;
-
 float rawLevelVal 				= 0.0;
-float thresholdLevel 			= 10.0;
 int sampleIndex 				= 0;
 
 unsigned long lastSampleTime 	= 0;
@@ -209,6 +205,27 @@ FLASH_IF_StatusTypedef write_devnonce_to_flash(uint32_t devnonce) {
 }
 
 /**
+ *  Function that checks if Modbus sensor is working or not
+ */
+
+void CheckModbus(void){
+	int defective = 0;
+	for (int i = 0; i < 10; i++) {
+	    if(waterLevelSamples[i] <= 0.0){
+	    	defective += 1;
+	    }
+	}
+	if (defective >= 10){
+		isModbusDefective = true;
+		 APP_LOG(TS_OFF, VLEVEL_M, "Error: Modbus Sensor Unresponsive\r\n");
+	} else {
+		isModbusDefective = false;
+		APP_LOG(TS_OFF, VLEVEL_M,  "Modbus Sensor is Responsive\r\n");
+	}
+}
+
+
+/**
  *  Function that parses modbus reply to water level distance value
  * Response: Distance Value [Float]
  */
@@ -249,6 +266,18 @@ float getMedianValue(float *array, int size) {
     } else {
         return array[size / 2];
     }
+}
+
+/**
+ *  Function to get the average value from a sorted array of floats
+ * Response:
+ */
+float getAverageValue(float *array, int size) {
+    float sum = 0.0;
+    for (int i = 0; i < size; i++) {
+        sum += array[i];
+    }
+    return sum / size;
 }
 
 /**
@@ -298,13 +327,6 @@ void fetchSingleShotData() {
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
 }
 
-//! Function to return the next number in the random order array
-uint32_t getNextRandomNumber(void) {
-    static uint32_t currentIndex = 0;
-    uint32_t nextNumber = randomNumbers[currentIndex];
-    currentIndex = (currentIndex + 1) % 20;  // Update index to cycle through the array
-    return nextNumber;
-}
 
 /* USER CODE END PTD */
 
@@ -597,8 +619,11 @@ void panicMode(void){
 	APP_LOG(TS_OFF, VLEVEL_M, "\r\n Reverting all device configuration to default \r\n");
 
 	if (FLASH_IF_Read(&FlashNVM, LORAWAN_NVM_BASE_ADDRESS, sizeof(FlashNVM)) == FLASH_IF_OK) {
-		FlashNVM.pwxWaterLevelThreshold = (uint16_t)10.0;
-		thresholdLevel = 10.0;
+		FlashNVM.pwxWaterLevelThresholdHigh = (uint16_t)15.0;
+		thresholdLevelHigh = 15.0;
+		HAL_Delay(50);
+		FlashNVM.pwxWaterLevelThresholdLow = (uint16_t)0.0;
+		thresholdLevelLow = 0.0;
 		HAL_Delay(50);
 		FlashNVM.pwxTxInterval = (uint64_t)900000;
 		TRANSMIT_INTERVAL_MS = 900000;
@@ -631,12 +656,161 @@ void panicMode(void){
 	APP_LOG(TS_OFF, VLEVEL_M, "\r\n==============================================\r\n");
 }
 
+/**
+ *  Initial water level distance value fetch
+ *
+ */
+void fetchSensorDataOnce() {
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+
+	HAL_Delay(1500);
+	uint8_t msg[100]; // Buffer for storing messages to be transmitted via UART
+	uint8_t ModbusCommand[8] = {0x01,0x03,0x00,0x03,0x00,0x01,0x74,0x0A};
+	uint16_t CommandSize = sizeof(ModbusCommand) / sizeof(ModbusCommand[0]);
+	float waterLevels[readingCount];
+
+	APP_LOG(TS_OFF, VLEVEL_M, "\r\nINITIAL DATA FETCH\r\n");
+
+	for(int i = 0; i < 10;  i++)	{
+		APP_LOG(TS_OFF, VLEVEL_M, " Data Fetch: %d\r\n", i+1);
+		sendRaw(ModbusCommand, CommandSize, &ModbusResp);
+		HAL_Delay(250);
+
+		APP_LOG(TS_OFF, VLEVEL_M, " MODBUS RESPONSE (Hex): ");
+		for (int x = 0; x < ModbusResp.rxIndex; x++){
+			APP_LOG(TS_OFF, VLEVEL_M, "%02X ", ModbusResp.buffer[x]);
+			HAL_Delay(50);
+		}
+
+		rawLevelVal = parseReply(ModbusResp.buffer);
+		waterLevels[i] = rawLevelVal;
+		HAL_Delay(50);
+		//APP_LOG(TS_OFF, VLEVEL_M, " Water Level: %d\r\n", rawLevelVal);
+		sprintf((char*)msg, "\r\nWater Level: %f \r\n", rawLevelVal);
+		HAL_UART_Transmit(&huart2, msg, strlen((char*)msg), 1000);
+
+		APP_LOG(TS_OFF, VLEVEL_M, " \r\n");
+		HAL_Delay(1000);
+	}
+
+	sortArray(waterLevels, 10);
+
+	if(samplingMethod == 0){
+		waterLevel = getMedianValue(waterLevels, 10);
+	} else {
+		waterLevel = getAverageValue(waterLevels, 10);
+	}
+
+	waterLevelLatest = waterLevel;
+	if(waterLevelMin == 0 && waterLevelMax == 0){
+		waterLevelMin = waterLevelMax = waterLevel;
+	}
+
+	if(waterLevel < waterLevelMin){
+		waterLevelMin = waterLevel;
+	} else if(waterLevel > waterLevelMax){
+		waterLevelMax = waterLevel;
+	}
+
+	sprintf((char*)msg, "Final Water Level: %f \r\n", waterLevel);
+	HAL_UART_Transmit(&huart2, msg, strlen((char*)msg), 1000);
+
+	waterLevelSamples[sampleIndex] = waterLevel;
+	sampleIndex += 1;
+}
+
+
+/* Function to get water level differential value
+ *
+ */
+void fetchSensorDataDifferential(void) {
+
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+
+	HAL_Delay(1500);
+	uint8_t msg[100]; // Buffer for storing messages to be transmitted via UART
+	uint8_t ModbusCommand[8] = {0x01,0x03,0x00,0x03,0x00,0x01,0x74,0x0A};
+	uint16_t CommandSize = sizeof(ModbusCommand) / sizeof(ModbusCommand[0]);
+	float waterLevelChange;
+	float waterLevels[readingCount];
+	float differentialLevels[readingCount];
+
+	for (int i = 0; i < 10; i++) {
+	    APP_LOG(TS_OFF, VLEVEL_M, " Data Fetch: %d\r\n", i + 1);
+	    sendRaw(ModbusCommand, CommandSize, &ModbusResp);
+	    HAL_Delay(250);
+
+	    APP_LOG(TS_OFF, VLEVEL_M, " MODBUS RESPONSE (Hex): ");
+	    for (int x = 0; x < ModbusResp.rxIndex; x++) {
+	        APP_LOG(TS_OFF, VLEVEL_M, "%02X ", ModbusResp.buffer[x]);
+	        HAL_Delay(50);
+	    }
+
+	    rawLevelVal = parseReply(ModbusResp.buffer);
+	    waterLevels[i] = rawLevelVal;
+	    differentialLevels[i] = rawLevelVal - waterLevelLatest; // Calculate the difference
+	    HAL_Delay(50);
+
+	    sprintf((char*)msg, "\r\nWater Level: %f, Differential: %f \r\n", rawLevelVal, differentialLevels[i]);
+	    HAL_UART_Transmit(&huart2, msg, strlen((char*)msg), 1000);
+
+	    APP_LOG(TS_OFF, VLEVEL_M, " \r\n");
+	    HAL_Delay(1000);
+	}
+
+	// Sort the array
+	sortArray(differentialLevels, 10);
+
+	if (samplingMethod == 0) {
+	    waterLevelChange = getMedianValue(differentialLevels, 10);
+	} else {
+	    waterLevelChange = getAverageValue(differentialLevels, 10);
+	}
+
+	// Update the latest water level
+	waterLevelLatest = waterLevel + waterLevelChange;
+
+	sprintf((char*)msg, "\r\nWater Level Change: %f \r\n", waterLevelChange);
+	HAL_UART_Transmit(&huart2, msg, strlen((char*)msg), 1000);
+
+	if(waterLevelMin == 0 && waterLevelMax == 0){
+		waterLevelMin = waterLevelMax = waterLevelLatest;
+	}
+
+	if(waterLevel < waterLevelMin){
+		waterLevelMin = waterLevelLatest;
+	} else if(waterLevel > waterLevelMax){
+		waterLevelMax = waterLevelLatest;
+	}
+
+	sprintf((char*)msg, "Final Water Level: %f \r\n", waterLevel);
+	HAL_UART_Transmit(&huart2, msg, strlen((char*)msg), 1000);
+
+    waterLevelSamples[sampleIndex] = waterLevel;
+    sampleIndex += 1;
+
+    TRANSMIT_INTERVAL_MS = 180000;
+    APP_LOG(TS_OFF, VLEVEL_M, "Transmission Cycle: %d seconds \r\n", TRANSMIT_INTERVAL_MS / 1000);
+    MAX_WATER_LEVEL_SAMPLES = 1;
+    waterLevelSamples = (float *)malloc(sizeof(float) * MAX_WATER_LEVEL_SAMPLES);
+    transmissionType = 0;
+    skipScheduledTransmission = false;
+    isLevelBreached = false;
+
+	APP_LOG(TS_OFF, VLEVEL_M, "\r\n");
+//	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
+//	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+}
+
 /* Function to get water level distance value
  *
  */
 void fetchSensorData(void) {
 
 	bool sendUnscheduledTransmission = false;
+	SecureElementNvmData_t FlashNVM;
 
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
@@ -669,7 +843,7 @@ void fetchSensorData(void) {
 		HAL_Delay(1000);
 	}
 
-
+	//CheckModbus();
 
 	/*!
 	 * Reply Format
@@ -679,8 +853,12 @@ void fetchSensorData(void) {
 
 	// Sort the array
 	sortArray(waterLevels, 10);
-	// Get the median value
-	waterLevel = getMedianValue(waterLevels, 10);
+
+	if(samplingMethod == 0){
+		waterLevel = getMedianValue(waterLevels, 10);
+	} else {
+		waterLevel = getAverageValue(waterLevels, 10);
+	}
 
 	waterLevelLatest = waterLevel;
 	if(waterLevelMin == 0 && waterLevelMax == 0){
@@ -693,45 +871,157 @@ void fetchSensorData(void) {
 		waterLevelMax = waterLevel;
 	}
 
-
-
-	// FOR TESTING PURPOSES ONLY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	// FOR TESTING PURPOSES ONLY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	//waterLevel = getNextRandomNumber();
-	// FOR TESTING PURPOSES ONLY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	// FOR TESTING PURPOSES ONLY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 	sprintf((char*)msg, "Final Water Level: %f \r\n", waterLevel);
 	HAL_UART_Transmit(&huart2, msg, strlen((char*)msg), 1000);
 
     waterLevelSamples[sampleIndex] = waterLevel;
     sampleIndex += 1;
 
-	if(waterLevel > thresholdLevel){
-		APP_LOG(TS_OFF, VLEVEL_M, " Water Level is greater than threshold! \r\n");
-		TRANSMIT_INTERVAL_MS = 180000;
-		APP_LOG(TS_OFF, VLEVEL_M, "Transmission Cycle: %d seconds \r\n",TRANSMIT_INTERVAL_MS/1000);
-		MAX_WATER_LEVEL_SAMPLES = 1;
-		waterLevelSamples = (float*)malloc(sizeof(int)*MAX_WATER_LEVEL_SAMPLES);
-		hasJoined = false; // for redundancy
-		transmissionType = 1;
-		sendUnscheduledTransmission = true;
-		skipScheduledTransmission = true;
-	} else{
-		APP_LOG(TS_OFF, VLEVEL_M, " Water Level is within threshold. \r\n");
-		TRANSMIT_INTERVAL_MS = 900000;
-		APP_LOG(TS_OFF, VLEVEL_M, "Transmission Cycle: %d seconds \r\n",TRANSMIT_INTERVAL_MS/1000);
-		MAX_WATER_LEVEL_SAMPLES = 5;
-		waterLevelSamples = (float*)malloc(sizeof(int)*MAX_WATER_LEVEL_SAMPLES);
-		transmissionType = 0;
-	    skipScheduledTransmission = false;
-	}
+//    if (waterLevel > thresholdLevelHigh || waterLevel < thresholdLevelLow) {
+//        APP_LOG(TS_OFF, VLEVEL_M, " Water Level is greater than threshold! \r\n");
+//        TRANSMIT_INTERVAL_MS = 180000;
+//        MAX_WATER_LEVEL_SAMPLES = 1;
+//        transmissionType = 1;
+//        sendUnscheduledTransmission = true;
+//        skipScheduledTransmission = true;
+//        continuousCounter = 0;
+//    } else {
+//        APP_LOG(TS_OFF, VLEVEL_M, " Water Level is within threshold. \r\n");
+//        if (continuousMode && continuousCounter < 2) {
+//            TRANSMIT_INTERVAL_MS = 180000;
+//            MAX_WATER_LEVEL_SAMPLES = 1;
+//            sendUnscheduledTransmission = true;
+//            skipScheduledTransmission = true;
+//            continuousCounter++;
+//            transmissionType = 1;
+//        } else {
+//        	if(continuousCounter >= 2){
+//            	if (FLASH_IF_Read(&FlashNVM, LORAWAN_NVM_BASE_ADDRESS, sizeof(FlashNVM)) == FLASH_IF_OK) {
+//            		HAL_Delay(50);
+//            		MAX_WATER_LEVEL_SAMPLES = FlashNVM.pwxSamplingCount;
+//                	waterLevelSamples = (float*)malloc(sizeof(int)*MAX_WATER_LEVEL_SAMPLES);
+//                	SAMPLE_INTERVAL_MS = (TRANSMIT_INTERVAL_MS/MAX_WATER_LEVEL_SAMPLES);
+//                    continuousCounter = 0;
+//            	} else {
+//            		APP_LOG(TS_OFF, VLEVEL_M, "FAILED READING FLASH \r\n");
+//            	}
+//        	}
+//
+//            TRANSMIT_INTERVAL_MS = 900000;
+//            sendUnscheduledTransmission = false;
+//            skipScheduledTransmission = false;
+//            transmissionType = 0;
+//        }
+//
+//    }
+//
+//    APP_LOG(TS_OFF, VLEVEL_M, "Transmission Cycle: %d seconds \r\n", TRANSMIT_INTERVAL_MS / 1000);
+//    waterLevelSamples = (float*)malloc(sizeof(int) * MAX_WATER_LEVEL_SAMPLES);
+//    hasJoined = false; // for redundancy
+
+    if (continuousMode) {
+        if (waterLevel >= thresholdLevelHigh || waterLevel <= thresholdLevelLow) { // Un-comment this if Low Threshold is needed
+            APP_LOG(TS_OFF, VLEVEL_M, "Water Level is out of threshold range! \r\n");
+            TRANSMIT_INTERVAL_MS = 180000;
+            APP_LOG(TS_OFF, VLEVEL_M, "Transmission Cycle: %d seconds \r\n", TRANSMIT_INTERVAL_MS / 1000);
+            MAX_WATER_LEVEL_SAMPLES = 1;
+            waterLevelSamples = (float *)malloc(sizeof(float) * MAX_WATER_LEVEL_SAMPLES);
+            transmissionType = 1;
+            sendUnscheduledTransmission = true;
+            skipScheduledTransmission = true;
+            isLevelBreached = true;
+            sampleIndex = 0;
+            //hasJoined = false; // Set as false due to unscheduled transmission
+        } else {
+            APP_LOG(TS_OFF, VLEVEL_M, "Water Level is within threshold. \r\n");
+            if (continuousCounter < 2) {
+                TRANSMIT_INTERVAL_MS = 180000;
+                APP_LOG(TS_OFF, VLEVEL_M, "Transmission Cycle: %d seconds \r\n", TRANSMIT_INTERVAL_MS / 1000);
+                MAX_WATER_LEVEL_SAMPLES = 1;
+                waterLevelSamples = (float *)malloc(sizeof(float) * MAX_WATER_LEVEL_SAMPLES);
+                transmissionType = 1;
+                sendUnscheduledTransmission = true;
+                skipScheduledTransmission = true;
+                isLevelBreached = false;
+                sampleIndex = 0;
+                //hasJoined = false; // Still setting as false for redundancy
+                continuousCounter++;
+            } else {
+                if (FLASH_IF_Read(&FlashNVM, LORAWAN_NVM_BASE_ADDRESS, sizeof(FlashNVM)) == FLASH_IF_OK) {
+                    HAL_Delay(50);
+                    MAX_WATER_LEVEL_SAMPLES = FlashNVM.pwxSamplingCount;
+                    waterLevelSamples = (float *)malloc(sizeof(float) * MAX_WATER_LEVEL_SAMPLES);
+                    SAMPLE_INTERVAL_MS = (TRANSMIT_INTERVAL_MS / MAX_WATER_LEVEL_SAMPLES);
+                    continuousCounter = 0;
+                } else {
+                    APP_LOG(TS_OFF, VLEVEL_M, "FAILED READING FLASH \r\n");
+                }
+                TRANSMIT_INTERVAL_MS = 900000;
+                APP_LOG(TS_OFF, VLEVEL_M, "Transmission Cycle: %d seconds \r\n", TRANSMIT_INTERVAL_MS / 1000);
+                MAX_WATER_LEVEL_SAMPLES = 5;
+                waterLevelSamples = (float *)malloc(sizeof(float) * MAX_WATER_LEVEL_SAMPLES);
+                transmissionType = 0;
+                sendUnscheduledTransmission = false;
+                skipScheduledTransmission = false;
+                isLevelBreached = false;
+                //hasJoined = true; // Back to scheduled transmission
+            }
+        }
+    } else { // continuousMode == false
+        if (waterLevel >= thresholdLevelHigh || waterLevel <= thresholdLevelLow) { // Un-comment this if Low Threshold is needed
+            APP_LOG(TS_OFF, VLEVEL_M, "Water Level is out of threshold range! \r\n");
+            TRANSMIT_INTERVAL_MS = 180000;
+            APP_LOG(TS_OFF, VLEVEL_M, "Transmission Cycle: %d seconds \r\n", TRANSMIT_INTERVAL_MS / 1000);
+            MAX_WATER_LEVEL_SAMPLES = 1;
+            waterLevelSamples = (float *)malloc(sizeof(float) * MAX_WATER_LEVEL_SAMPLES);
+            transmissionType = 1;
+            sendUnscheduledTransmission = true;
+            skipScheduledTransmission = true;
+            isLevelBreached = true;
+            sampleIndex = 0;
+            //hasJoined = false; // Set as false due to unscheduled transmission
+        } else {
+            APP_LOG(TS_OFF, VLEVEL_M, "Water Level is within threshold. \r\n");
+            TRANSMIT_INTERVAL_MS = 900000;
+            APP_LOG(TS_OFF, VLEVEL_M, "Transmission Cycle: %d seconds \r\n", TRANSMIT_INTERVAL_MS / 1000);
+            MAX_WATER_LEVEL_SAMPLES = 5;
+            waterLevelSamples = (float *)malloc(sizeof(float) * MAX_WATER_LEVEL_SAMPLES);
+            transmissionType = 0;
+            sendUnscheduledTransmission = false;
+            skipScheduledTransmission = false;
+            isLevelBreached = false;
+            //hasJoined = true; // Back to scheduled transmission
+        }
+    }
+
+
+
+//	if(waterLevel > thresholdLevel){
+//		APP_LOG(TS_OFF, VLEVEL_M, " Water Level is greater than threshold! \r\n");
+//		TRANSMIT_INTERVAL_MS = 180000;
+//		APP_LOG(TS_OFF, VLEVEL_M, "Transmission Cycle: %d seconds \r\n",TRANSMIT_INTERVAL_MS/1000);
+//		MAX_WATER_LEVEL_SAMPLES = 1;
+//		waterLevelSamples = (float*)malloc(sizeof(int)*MAX_WATER_LEVEL_SAMPLES);
+//		hasJoined = false; // for redundancy
+//		transmissionType = 1;
+//		sendUnscheduledTransmission = true;
+//		skipScheduledTransmission = true;
+//	} else{
+//		APP_LOG(TS_OFF, VLEVEL_M, " Water Level is within threshold. \r\n");
+//		TRANSMIT_INTERVAL_MS = 900000;
+//		APP_LOG(TS_OFF, VLEVEL_M, "Transmission Cycle: %d seconds \r\n",TRANSMIT_INTERVAL_MS/1000);
+//		MAX_WATER_LEVEL_SAMPLES = 5;
+//		waterLevelSamples = (float*)malloc(sizeof(int)*MAX_WATER_LEVEL_SAMPLES);
+//		transmissionType = 0;
+//	    skipScheduledTransmission = false;
+//	}
 
 	if(sendUnscheduledTransmission == true){
 		while(sendUnscheduledTransmission!= false){
 			LmHandlerErrorStatus_t status = LORAMAC_HANDLER_ERROR;
 			UTIL_TIMER_Time_t nextTxIn = 0;
 			APP_LOG(TS_OFF, VLEVEL_M, "[!]  LM HANDLER IS BUSY! \r\n");
+			HAL_Delay(100);
 			  if (LmHandlerIsBusy() == false)
 			  {
 				APP_LOG(TS_OFF, VLEVEL_M, "============================================= \r\n");
@@ -748,10 +1038,21 @@ void fetchSensorData(void) {
 					}
 
 				/* Prepare Data */
+			    waterLevelLatest 	= waterLevelLatest 	* 100;
+			    waterLevel 		 	= waterLevel 		* 100;
+			    waterLevelMin	 	= waterLevelMin 	* 100;
+			    waterLevelMax	 	= waterLevelMax 	* 100;
+
 				uint8_t i = 0;
 				AppData.Buffer[i++] = (uint8_t)transmissionType;
+				AppData.Buffer[i++] = (uint8_t)((uint16_t)waterLevelLatest >> 8);
+				AppData.Buffer[i++] = (uint8_t)((uint16_t)waterLevelLatest & 0xFF);
 				AppData.Buffer[i++] = (uint8_t)((uint16_t)waterLevel >> 8);
 				AppData.Buffer[i++] = (uint8_t)((uint16_t)waterLevel & 0xFF);
+				AppData.Buffer[i++] = (uint8_t)((uint16_t)waterLevelMin >> 8);
+				AppData.Buffer[i++] = (uint8_t)((uint16_t)waterLevelMin & 0xFF);
+				AppData.Buffer[i++] = (uint8_t)((uint16_t)waterLevelMax >> 8);
+				AppData.Buffer[i++] = (uint8_t)((uint16_t)waterLevelMax & 0xFF);
 				AppData.BufferSize = i;
 
 				sprintf((char*)msg, "Payload Buffer Size: %u\r\n\r\n", AppData.BufferSize);
@@ -1032,7 +1333,7 @@ void LoRaWAN_Init(void)
   APP_LOG(TS_OFF, VLEVEL_M, " |  __/ (_| | (__|   <  __/ |_ \\ V  V / (_) | |   >  <   | || | | | (__ _  \r\n");
   APP_LOG(TS_OFF, VLEVEL_M, " |_|   \\__,_|\\___|_|\\_\\___|\\__| \\_/\\_/ \\___/|_|  /_/\\_\\ |___|_| |_|\\___(_) \r\n");
   APP_LOG(TS_OFF, VLEVEL_M, "\r\n");
-  APP_LOG(TS_OFF, VLEVEL_M, " Firmware: Water Level 20M 	Ver.: 1.0.1		Rev. Date: 7-29-24\r\n");
+  APP_LOG(TS_OFF, VLEVEL_M, " Firmware: Water Level 20M 	Ver.: 1.0.1		Rev. Date: 8-2-24\r\n");
   APP_LOG(TS_OFF, VLEVEL_M, "\r\n");
 
   waterLevelSamples = (float*)malloc(sizeof(int)*MAX_WATER_LEVEL_SAMPLES);
@@ -1140,72 +1441,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		  APP_LOG(TS_OFF, VLEVEL_M, "+============================================+\r\n");
 		  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET); /* LED_BLUE */
 		  HAL_GPIO_WritePin(LED1_GPIO_Port, LED2_Pin, GPIO_PIN_RESET); /* LED_BLUE */
-
-			  if (LmHandlerIsBusy() == false)
-			  {
-				APP_LOG(TS_OFF, VLEVEL_M, "============================================= \r\n");
-				APP_LOG(TS_OFF, VLEVEL_M, "            UNSCHEDULED TRANSMISSION            \r\n");
-				APP_LOG(TS_OFF, VLEVEL_M, "============================================= \r\n");
-				//HAL_StatusTypeDef status;
-
-				AppData.Port = LORAWAN_USER_APP_PORT;
-				_doneScanning = false;
-
-				uint8_t msg[100]; // Buffer for storing messages to be transmitted via UART
-				if(hasJoined == false){
-					fetchSensorData();
-				}
-				_doneScanning = true;
-				HAL_Delay(200);
-
-				waterLevel = averageWaterLevel();
-
-				if(waterLevel > thresholdLevel){
-					APP_LOG(TS_OFF, VLEVEL_M, " Water Level is greater than threshold! \r\n");
-					TRANSMIT_INTERVAL_MS = 180000;
-					APP_LOG(TS_OFF, VLEVEL_M, "Transmission Cycle: %d seconds \r\n",TRANSMIT_INTERVAL_MS/1000);
-					MAX_WATER_LEVEL_SAMPLES = 1;
-					waterLevelSamples = (float*)malloc(sizeof(int)*MAX_WATER_LEVEL_SAMPLES);
-					hasJoined = false; // for redundancy
-					transmissionType = 1;
-				} else{
-					APP_LOG(TS_OFF, VLEVEL_M, " Water Level is within threshold. \r\n");
-					TRANSMIT_INTERVAL_MS = 900000;
-					APP_LOG(TS_OFF, VLEVEL_M, "Transmission Cycle: %d seconds \r\n",TRANSMIT_INTERVAL_MS/1000);
-					MAX_WATER_LEVEL_SAMPLES = 5;
-					waterLevelSamples = (float*)malloc(sizeof(int)*MAX_WATER_LEVEL_SAMPLES);
-					transmissionType = 0;
-				}
-
-				for(int x = 0; x < AppData.BufferSize; x++){
-						AppData.Buffer[x] = 0;
-					}
-
-				/* Prepare Data */
-				uint8_t i = 0;
-				AppData.Buffer[i++] = (uint8_t)transmissionType;
-				AppData.Buffer[i++] = (uint8_t)((uint16_t)waterLevel >> 8);
-				AppData.Buffer[i++] = (uint8_t)((uint16_t)waterLevel & 0xFF);
-				AppData.BufferSize = i;
-
-				sprintf((char*)msg, "Payload Buffer Size: %u\r\n\r\n", AppData.BufferSize);
-				HAL_UART_Transmit(&huart2, msg, strlen((char*)msg), 1000);
-
-				for(int i = 0; i < MAX_WATER_LEVEL_SAMPLES; i++){
-					waterLevelSamples[i] = 0;
-				}
-
-				if ((JoinLedTimer.IsRunning) && (LmHandlerJoinStatus() == LORAMAC_HANDLER_SET))
-				{
-				  UTIL_TIMER_Stop(&JoinLedTimer);
-				  HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_RESET); /* LED_RED */
-				}
-
-			    LmHandlerSend(&AppData, LmHandlerParamsConfirmed.IsTxConfirmed, false);
-
-			  }
-			skipScheduledTransmission = true;
-
       //UTIL_SEQ_SetTask((1 << CFG_SEQ_Task_LoRaStopJoinEvent), CFG_SEQ_Prio_0);
       break;
     case  BUT3_Pin:
@@ -1482,7 +1717,7 @@ static void OnRxData(LmHandlerAppData_t *appData, LmHandlerRxParams_t *params)
             	}
 
             	if(appData->Buffer[0] == CONFIG_CONF_UPLINK_ID){
-            		uint16_t uplinkCounter;
+            		uint16_t uplinkCounter = 0;
 
 					APP_LOG(TS_OFF, VLEVEL_M, "\r\n==============================================\r\n");
 					APP_LOG(TS_OFF, VLEVEL_M, "Received data from port 55 (hex): ");
@@ -1516,74 +1751,16 @@ static void OnRxData(LmHandlerAppData_t *appData, LmHandlerRxParams_t *params)
 
             	}
 
-            	if(appData->Buffer[0] == CONFIG_SAMPLING_COUNT_ID){
-            		int parsedCount = 0;
-
+            	if(appData->Buffer[0] == SYSTEM_DIAGNOSTIC_ID){
 					APP_LOG(TS_OFF, VLEVEL_M, "\r\n==============================================\r\n");
 					APP_LOG(TS_OFF, VLEVEL_M, "Received data from port 55 (hex): ");
 					for (int i = 0; i < appData->BufferSize; i++) {
 						APP_LOG(TS_OFF, VLEVEL_M, "%02X ", appData->Buffer[i]);
 					}
-                    for (int i = 1; i < appData->BufferSize; i++) {
-                    	parsedCount = (parsedCount << 8) | appData->Buffer[i];
-                    }
 
-            		APP_LOG( TS_OFF, VLEVEL_M, "###### Sampling Count: %u \r\n", parsedCount);
-
-            		if (FLASH_IF_Read(&FlashNVM, LORAWAN_NVM_BASE_ADDRESS, sizeof(FlashNVM)) == FLASH_IF_OK) {
-            			FlashNVM.pwxSamplingCount = (uint16_t)parsedCount;
-            			MAX_WATER_LEVEL_SAMPLES = parsedCount;
-				    	waterLevelSamples = (float*)malloc(sizeof(int)*MAX_WATER_LEVEL_SAMPLES);
-				    	SAMPLE_INTERVAL_MS = (TRANSMIT_INTERVAL_MS/MAX_WATER_LEVEL_SAMPLES);
-					} else {
-						APP_LOG(TS_OFF, VLEVEL_M, "FAILED READING FLASH \r\n");
-					}
-
-					/* Save to NVM */
-					if (FLASH_IF_Erase(LORAWAN_NVM_BASE_ADDRESS, FLASH_PAGE_SIZE) == FLASH_IF_OK){
-						if(FLASH_IF_Write(LORAWAN_NVM_BASE_ADDRESS, &FlashNVM, sizeof(FlashNVM)) == FLASH_IF_OK){
-							APP_LOG(TS_OFF, VLEVEL_M, "###### Success Saving to Flash \r\n");
-						}else{
-							APP_LOG(TS_OFF, VLEVEL_M, "###### Error Saving to Flash \r\n");
-						}
-					}else{
-						APP_LOG(TS_OFF, VLEVEL_M, "###### Error Erasing Flash \r\n");
-					}
+            		APP_LOG( TS_OFF, VLEVEL_M, "###### Sending System Diagnostic on the next uplink \r\n");
+            		sendSystemDiagnostic = true;
             	}
-
-            	if(appData->Buffer[0] == CONFIG_LEVEL_THRESHOLD_ID){
-            		int parsedLevel = 0;
-
-					APP_LOG(TS_OFF, VLEVEL_M, "\r\n==============================================\r\n");
-					APP_LOG(TS_OFF, VLEVEL_M, "Received data from port 55 (hex): ");
-					for (int i = 0; i < appData->BufferSize; i++) {
-						APP_LOG(TS_OFF, VLEVEL_M, "%02X ", appData->Buffer[i]);
-					}
-                    for (int i = 1; i < appData->BufferSize; i++) {
-                    	parsedLevel = (parsedLevel << 8) | appData->Buffer[i];
-                    }
-
-            		APP_LOG( TS_OFF, VLEVEL_M, "###### Water Level Threshold: %u \r\n", parsedLevel);
-
-            		if (FLASH_IF_Read(&FlashNVM, LORAWAN_NVM_BASE_ADDRESS, sizeof(FlashNVM)) == FLASH_IF_OK) {
-            			FlashNVM.pwxWaterLevelThreshold = (uint16_t)parsedLevel;
-            			thresholdLevel = parsedLevel;
-					} else {
-						APP_LOG(TS_OFF, VLEVEL_M, "FAILED READING FLASH \r\n");
-					}
-
-					/* Save to NVM */
-					if (FLASH_IF_Erase(LORAWAN_NVM_BASE_ADDRESS, FLASH_PAGE_SIZE) == FLASH_IF_OK){
-						if(FLASH_IF_Write(LORAWAN_NVM_BASE_ADDRESS, &FlashNVM, sizeof(FlashNVM)) == FLASH_IF_OK){
-							APP_LOG(TS_OFF, VLEVEL_M, "###### Success Saving to Flash \r\n");
-						}else{
-							APP_LOG(TS_OFF, VLEVEL_M, "###### Error Saving to Flash \r\n");
-						}
-					}else{
-						APP_LOG(TS_OFF, VLEVEL_M, "###### Error Erasing Flash \r\n");
-					}
-            	}
-
 
             	if(appData->Buffer[0] == CONFIG_SAVE_REBOOT){
             		if(appData->Buffer[1] == 0x01){
@@ -1605,21 +1782,38 @@ static void OnRxData(LmHandlerAppData_t *appData, LmHandlerRxParams_t *params)
 							APP_LOG(TS_OFF, VLEVEL_M, "\r\n Reverting all device configuration to default \r\n");
 
 		            		if (FLASH_IF_Read(&FlashNVM, LORAWAN_NVM_BASE_ADDRESS, sizeof(FlashNVM)) == FLASH_IF_OK) {
-								FlashNVM.pwxWaterLevelThreshold = (uint16_t)10.0;
-								thresholdLevel = 10.0;
+
+								FlashNVM.pwxWaterLevelThresholdHigh = (uint16_t)15.0;
+								thresholdLevelHigh = 15.0;
 								HAL_Delay(100);
+
+								FlashNVM.pwxWaterLevelThresholdLow = (uint16_t)0.0;
+								thresholdLevelLow = 0.0;
+								HAL_Delay(100);
+
 								FlashNVM.pwxTxInterval = (uint64_t)900000;
 								TRANSMIT_INTERVAL_MS = 900000;
 								HAL_Delay(100);
+
 								FlashNVM.pwxCnfUplinkCount = (uint16_t)4;
 								MAX_UPLINK_BEFORE_CONFIRMED = 4;
 								confUplinkCounter = 0;
 								HAL_Delay(100);
+
+								FlashNVM.pwxSamplingMethod = (uint8_t)0;
+								samplingMethod = 0;
+								HAL_Delay(100);
+
+								FlashNVM.pwxMeasurementMethod = (uint8_t)0;
+								measurementMethod = 0;
+								HAL_Delay(100);
+
 		            			FlashNVM.pwxSamplingCount = (uint16_t)5;
 		            			MAX_WATER_LEVEL_SAMPLES = 5;
 						    	waterLevelSamples = (float*)malloc(sizeof(int)*MAX_WATER_LEVEL_SAMPLES);
 						    	SAMPLE_INTERVAL_MS = (TRANSMIT_INTERVAL_MS/MAX_WATER_LEVEL_SAMPLES);
 						    	HAL_Delay(100);
+
 						    	APP_LOG(TS_OFF, VLEVEL_M, " REVERTED ALL CONFIGURATION TO DEFAULT! \r\n");
 							} else {
 								APP_LOG(TS_OFF, VLEVEL_M, "FAILED READING FLASH \r\n");
@@ -1640,10 +1834,201 @@ static void OnRxData(LmHandlerAppData_t *appData, LmHandlerRxParams_t *params)
 							HAL_NVIC_SystemReset();
 							APP_LOG(TS_OFF, VLEVEL_M, "\r\n==============================================\r\n");
 						}
+
+						if(appData->Buffer[0] == CONFIG_CONTINUOUS_UPLINK){ //ADR
+
+							if(appData->Buffer[1] == 0){
+								APP_LOG(TS_OFF, VLEVEL_M, "\r\n==============================================\r\n");
+								APP_LOG(TS_OFF, VLEVEL_M, "\r\n 	[!]	CONTINUOUS UPLINK MODE OFF [!]              \r\n");
+								APP_LOG(TS_OFF, VLEVEL_M, "\r\n==============================================\r\n");
+								continuousMode = false;
+								HAL_Delay(500);
+							}
+
+							if(appData->Buffer[1] == 1){
+								APP_LOG(TS_OFF, VLEVEL_M, "\r\n==============================================\r\n");
+								APP_LOG(TS_OFF, VLEVEL_M, "\r\n 	[!]	CONTINUOUS UPLINK MODE ON [!]              \r\n");
+								APP_LOG(TS_OFF, VLEVEL_M, "\r\n==============================================\r\n");
+								continuousMode = true;
+								HAL_Delay(500);
+							}
+
+							APP_LOG(TS_OFF, VLEVEL_M, "\r\n==============================================\r\n");
+						}
 					}
 				break;
 
+				case DEVICE_CONFIG_PORT:
+					if(appData->Buffer != NULL && appData->BufferSize >1){
+		            	if(appData->Buffer[0] == CONFIG_SAMPLING_COUNT_ID){
+		            		int parsedCount = 0;
 
+							APP_LOG(TS_OFF, VLEVEL_M, "\r\n==============================================\r\n");
+							APP_LOG(TS_OFF, VLEVEL_M, "Received data from port 55 (hex): ");
+							for (int i = 0; i < appData->BufferSize; i++) {
+								APP_LOG(TS_OFF, VLEVEL_M, "%02X ", appData->Buffer[i]);
+							}
+		                    for (int i = 1; i < appData->BufferSize; i++) {
+		                    	parsedCount = (parsedCount << 8) | appData->Buffer[i];
+		                    }
+
+		            		APP_LOG( TS_OFF, VLEVEL_M, "###### Sampling Count: %u \r\n", parsedCount);
+
+		            		if (FLASH_IF_Read(&FlashNVM, LORAWAN_NVM_BASE_ADDRESS, sizeof(FlashNVM)) == FLASH_IF_OK) {
+		            			FlashNVM.pwxSamplingCount = (uint16_t)parsedCount;
+		            			MAX_WATER_LEVEL_SAMPLES = parsedCount;
+						    	waterLevelSamples = (float*)malloc(sizeof(int)*MAX_WATER_LEVEL_SAMPLES);
+						    	SAMPLE_INTERVAL_MS = (TRANSMIT_INTERVAL_MS/MAX_WATER_LEVEL_SAMPLES);
+							} else {
+								APP_LOG(TS_OFF, VLEVEL_M, "FAILED READING FLASH \r\n");
+							}
+
+							/* Save to NVM */
+							if (FLASH_IF_Erase(LORAWAN_NVM_BASE_ADDRESS, FLASH_PAGE_SIZE) == FLASH_IF_OK){
+								if(FLASH_IF_Write(LORAWAN_NVM_BASE_ADDRESS, &FlashNVM, sizeof(FlashNVM)) == FLASH_IF_OK){
+									APP_LOG(TS_OFF, VLEVEL_M, "###### Success Saving to Flash \r\n");
+								}else{
+									APP_LOG(TS_OFF, VLEVEL_M, "###### Error Saving to Flash \r\n");
+								}
+							}else{
+								APP_LOG(TS_OFF, VLEVEL_M, "###### Error Erasing Flash \r\n");
+							}
+		            	}
+
+		            	if(appData->Buffer[0] == CONFIG_LEVEL_THRESHOLD_HIGH_ID){
+		            		int parsedLevel = 0;
+
+							APP_LOG(TS_OFF, VLEVEL_M, "\r\n==============================================\r\n");
+							APP_LOG(TS_OFF, VLEVEL_M, "Received data from port 55 (hex): ");
+							for (int i = 0; i < appData->BufferSize; i++) {
+								APP_LOG(TS_OFF, VLEVEL_M, "%02X ", appData->Buffer[i]);
+							}
+		                    for (int i = 1; i < appData->BufferSize; i++) {
+		                    	parsedLevel = (parsedLevel << 8) | appData->Buffer[i];
+		                    }
+
+		            		APP_LOG( TS_OFF, VLEVEL_M, "###### Water Level HIGH Threshold: %u \r\n", parsedLevel);
+
+		            		if (FLASH_IF_Read(&FlashNVM, LORAWAN_NVM_BASE_ADDRESS, sizeof(FlashNVM)) == FLASH_IF_OK) {
+		            			FlashNVM.pwxWaterLevelThresholdHigh = (uint16_t)parsedLevel;
+		            			thresholdLevelHigh = parsedLevel;
+							} else {
+								APP_LOG(TS_OFF, VLEVEL_M, "FAILED READING FLASH \r\n");
+							}
+
+							/* Save to NVM */
+							if (FLASH_IF_Erase(LORAWAN_NVM_BASE_ADDRESS, FLASH_PAGE_SIZE) == FLASH_IF_OK){
+								if(FLASH_IF_Write(LORAWAN_NVM_BASE_ADDRESS, &FlashNVM, sizeof(FlashNVM)) == FLASH_IF_OK){
+									APP_LOG(TS_OFF, VLEVEL_M, "###### Success Saving to Flash \r\n");
+								}else{
+									APP_LOG(TS_OFF, VLEVEL_M, "###### Error Saving to Flash \r\n");
+								}
+							}else{
+								APP_LOG(TS_OFF, VLEVEL_M, "###### Error Erasing Flash \r\n");
+							}
+		            	}
+
+		            	if(appData->Buffer[0] == CONFIG_LEVEL_THRESHOLD_LOW_ID){
+		            		int parsedLevel = 0;
+
+							APP_LOG(TS_OFF, VLEVEL_M, "\r\n==============================================\r\n");
+							APP_LOG(TS_OFF, VLEVEL_M, "Received data from port 55 (hex): ");
+							for (int i = 0; i < appData->BufferSize; i++) {
+								APP_LOG(TS_OFF, VLEVEL_M, "%02X ", appData->Buffer[i]);
+							}
+		                    for (int i = 1; i < appData->BufferSize; i++) {
+		                    	parsedLevel = (parsedLevel << 8) | appData->Buffer[i];
+		                    }
+
+		            		APP_LOG( TS_OFF, VLEVEL_M, "###### Water Level LOW Threshold: %u \r\n", parsedLevel);
+
+		            		if (FLASH_IF_Read(&FlashNVM, LORAWAN_NVM_BASE_ADDRESS, sizeof(FlashNVM)) == FLASH_IF_OK) {
+		            			FlashNVM.pwxWaterLevelThresholdLow = (uint16_t)parsedLevel;
+		            			thresholdLevelLow = parsedLevel;
+							} else {
+								APP_LOG(TS_OFF, VLEVEL_M, "FAILED READING FLASH \r\n");
+							}
+
+							/* Save to NVM */
+							if (FLASH_IF_Erase(LORAWAN_NVM_BASE_ADDRESS, FLASH_PAGE_SIZE) == FLASH_IF_OK){
+								if(FLASH_IF_Write(LORAWAN_NVM_BASE_ADDRESS, &FlashNVM, sizeof(FlashNVM)) == FLASH_IF_OK){
+									APP_LOG(TS_OFF, VLEVEL_M, "###### Success Saving to Flash \r\n");
+								}else{
+									APP_LOG(TS_OFF, VLEVEL_M, "###### Error Saving to Flash \r\n");
+								}
+							}else{
+								APP_LOG(TS_OFF, VLEVEL_M, "###### Error Erasing Flash \r\n");
+							}
+		            	}
+
+		            	if(appData->Buffer[0] == SAMPLING_METHOD_ID){
+		            		int parsedSamplingMethod = 0;
+
+							APP_LOG(TS_OFF, VLEVEL_M, "\r\n==============================================\r\n");
+							APP_LOG(TS_OFF, VLEVEL_M, "Received data from port 55 (hex): ");
+							for (int i = 0; i < appData->BufferSize; i++) {
+								APP_LOG(TS_OFF, VLEVEL_M, "%02X ", appData->Buffer[i]);
+							}
+		                    for (int i = 1; i < appData->BufferSize; i++) {
+		                    	parsedSamplingMethod = (parsedSamplingMethod << 8) | appData->Buffer[i];
+		                    }
+
+		            		APP_LOG( TS_OFF, VLEVEL_M, "###### Sampling Method: %u \r\n", parsedSamplingMethod);
+
+		            		if (FLASH_IF_Read(&FlashNVM, LORAWAN_NVM_BASE_ADDRESS, sizeof(FlashNVM)) == FLASH_IF_OK) {
+		            			FlashNVM.pwxSamplingMethod = (uint8_t)parsedSamplingMethod;
+		            			samplingMethod = parsedSamplingMethod;
+							} else {
+								APP_LOG(TS_OFF, VLEVEL_M, "FAILED READING FLASH \r\n");
+							}
+
+							/* Save to NVM */
+							if (FLASH_IF_Erase(LORAWAN_NVM_BASE_ADDRESS, FLASH_PAGE_SIZE) == FLASH_IF_OK){
+								if(FLASH_IF_Write(LORAWAN_NVM_BASE_ADDRESS, &FlashNVM, sizeof(FlashNVM)) == FLASH_IF_OK){
+									APP_LOG(TS_OFF, VLEVEL_M, "###### Success Saving to Flash \r\n");
+								}else{
+									APP_LOG(TS_OFF, VLEVEL_M, "###### Error Saving to Flash \r\n");
+								}
+							}else{
+								APP_LOG(TS_OFF, VLEVEL_M, "###### Error Erasing Flash \r\n");
+							}
+		            	}
+
+		            	if(appData->Buffer[0] == MEASUREMENT_METHOD_ID){
+		            		int parsedMeasurementMethod = 0;
+
+							APP_LOG(TS_OFF, VLEVEL_M, "\r\n==============================================\r\n");
+							APP_LOG(TS_OFF, VLEVEL_M, "Received data from port 55 (hex): ");
+							for (int i = 0; i < appData->BufferSize; i++) {
+								APP_LOG(TS_OFF, VLEVEL_M, "%02X ", appData->Buffer[i]);
+							}
+		                    for (int i = 1; i < appData->BufferSize; i++) {
+		                    	parsedMeasurementMethod = (parsedMeasurementMethod << 8) | appData->Buffer[i];
+		                    }
+
+		            		APP_LOG( TS_OFF, VLEVEL_M, "###### Sampling Method: %u \r\n", parsedMeasurementMethod);
+
+		            		if (FLASH_IF_Read(&FlashNVM, LORAWAN_NVM_BASE_ADDRESS, sizeof(FlashNVM)) == FLASH_IF_OK) {
+		            			FlashNVM.pwxMeasurementMethod = (uint8_t)parsedMeasurementMethod;
+		            			measurementMethod = parsedMeasurementMethod;
+							} else {
+								APP_LOG(TS_OFF, VLEVEL_M, "FAILED READING FLASH \r\n");
+							}
+
+							/* Save to NVM */
+							if (FLASH_IF_Erase(LORAWAN_NVM_BASE_ADDRESS, FLASH_PAGE_SIZE) == FLASH_IF_OK){
+								if(FLASH_IF_Write(LORAWAN_NVM_BASE_ADDRESS, &FlashNVM, sizeof(FlashNVM)) == FLASH_IF_OK){
+									APP_LOG(TS_OFF, VLEVEL_M, "###### Success Saving to Flash \r\n");
+								}else{
+									APP_LOG(TS_OFF, VLEVEL_M, "###### Error Saving to Flash \r\n");
+								}
+							}else{
+								APP_LOG(TS_OFF, VLEVEL_M, "###### Error Erasing Flash \r\n");
+							}
+		            	}
+
+					}
+					break;
 
 //            case 55:
 //            	if (appData->Buffer != NULL && appData->BufferSize >= 1) {
@@ -1711,7 +2096,12 @@ static void SendTxData(void)
 		APP_LOG(TS_OFF, VLEVEL_M, "============================================= \r\n");
 		APP_LOG(TS_OFF, VLEVEL_M, "            DATA SAMPLING: %d           \r\n", sampleIndex+1);
 		APP_LOG(TS_OFF, VLEVEL_M, "============================================= \r\n");
-		fetchSensorData();
+		if(measurementMethod == 0){
+			fetchSensorData();
+		} else {
+			fetchSensorData();
+		}
+
 		lastSampleTime = currentTime;
 	}
 
@@ -1721,6 +2111,7 @@ static void SendTxData(void)
 		if (sampleIndex >= MAX_WATER_LEVEL_SAMPLES || hasJoined == false) {
 			LmHandlerErrorStatus_t status = LORAMAC_HANDLER_ERROR;
 			UTIL_TIMER_Time_t nextTxIn = 0;
+		    uint8_t msg[100]; 					    // Buffer for storing messages to be transmitted via UART
 
 			  if (LmHandlerIsBusy() == false)
 			  {
@@ -1736,16 +2127,12 @@ static void SendTxData(void)
 			    AppData.Port = LORAWAN_USER_APP_PORT;
 			    _doneScanning = false;
 
-			    uint8_t msg[100]; 					    // Buffer for storing messages to be transmitted via UART
 			    if(hasJoined == false){
-			    	fetchSensorData();
+			    	fetchSensorDataOnce();
 			    }
 			    _doneScanning = true;
+
 			    HAL_Delay(200);
-
-			    waterLevel = averageWaterLevel();     	//UNCOMMENT THIS AFTER TESTING!!!!!!!
-			    HAL_Delay(50);
-
 			    fetchLTCData();							//READ LTC DATA
 			    HAL_Delay(50);
 
@@ -1759,6 +2146,23 @@ static void SendTxData(void)
 			    waterLevel 		 	= waterLevel * 100;
 			    waterLevelMin	 	= waterLevelMin * 100;
 			    waterLevelMax	 	= waterLevelMax * 100;
+
+				if(sendSystemDiagnostic == true){
+					transmissionType = 2;
+					int isZeroCalib  = 0;
+					int measureMeth  = measurementMethod == 0 ? 0 : 1;
+					int samplingMeth = samplingMethod == 0 ? 0 : 1;
+					int threshMeth	 = continuousMode == true ? 1 : 0;
+					int modbusError  = isModbusDefective == true ? 1 : 0;
+					int levelBreach  = isLevelBreached == true ? 1 : 0;
+
+					systemDiagnostic = (isZeroCalib << 5) |
+									   (measureMeth << 4) |
+									   (samplingMeth << 3) |
+									   (threshMeth  << 2) |
+									   (modbusError << 1) |
+									   (levelBreach << 0);
+				}
 
 				uint8_t i = 0;
 				AppData.Buffer[i++] = (uint8_t)transmissionType;
@@ -1784,6 +2188,10 @@ static void SendTxData(void)
 				AppData.Buffer[i++] = (uint8_t)((uint16_t)ICHARGE_DAC & 0xFF);
 				AppData.Buffer[i++] = (uint8_t)((uint16_t)SYSTEM_STATUS >> 8);
 				AppData.Buffer[i++] = (uint8_t)((uint16_t)SYSTEM_STATUS & 0xFF);
+				if(sendSystemDiagnostic == true){
+					AppData.Buffer[i++] = (uint8_t)systemDiagnostic;
+					sendSystemDiagnostic = false;
+				}
 
 				AppData.BufferSize = i;
 

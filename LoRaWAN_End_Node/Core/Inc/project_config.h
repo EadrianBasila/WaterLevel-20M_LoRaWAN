@@ -31,26 +31,32 @@
 #define LORAWAN_NVM_BASE_ADDRESS                    ((void *)0x0803F000UL)
 
 
-#define LORA_CONFIG_PARAMS_PORT 	55
-#define CONFIG_DEVEUI_ID     		0x01
-#define CONFIG_APPEUI_ID 			0x02
-#define CONFIG_APPKEY_ID 			0x03
-#define CONFIG_INTERVAL_ID 			0x04
-#define CONFIG_ADR_ID 				0x05
-#define CONFIG_SF_ID 				0x06
-#define CONFIG_CONF_UPLINK_ID		0x07
-#define CONFIG_LEVEL_THRESHOLD_ID	0x08
-#define CONFIG_SENSING_MODE_ID		0x09
-#define CONFIG_SAMPLING_COUNT_ID	0x0A
-#define CONFIG_SAVE_REBOOT      	0xAA
+#define LORA_CONFIG_PARAMS_PORT 		55
+#define CONFIG_DEVEUI_ID     			0x01
+#define CONFIG_APPEUI_ID 				0x02
+#define CONFIG_APPKEY_ID 				0x03
+#define CONFIG_INTERVAL_ID 				0x04
+#define CONFIG_ADR_ID 					0x05
+#define CONFIG_SF_ID 					0x06
+#define CONFIG_CONF_UPLINK_ID			0x07
+#define SYSTEM_DIAGNOSTIC_ID			0x08
+#define CONFIG_SAVE_REBOOT      		0xAA
 
-#define LORAWAN_MODBUS_DOWNLINK_PORT 25
+#define DEVICE_CONFIG_PORT 				25
+#define CONFIG_LEVEL_THRESHOLD_HIGH_ID	0x01
+#define CONFIG_LEVEL_THRESHOLD_LOW_ID	0x02
+#define CONFIG_SAMPLING_COUNT_ID		0x03
+#define SAMPLING_METHOD_ID				0x04
+#define MEASUREMENT_METHOD_ID			0x05
+
+
 //#define LORAWAN_MODBUS_DEVICE_CONFIG_ID             1
 //#define LORAWAN_MODBUS_SEGMENT_CONFIG_ID            2
 //#define LORAWAN_BYPASS_CMD_PORT                     3
 
 #define DEVICE_PANIC_PORT			69
 #define CONFIG_RESTORE_DEV_CONFIG   0x01
+#define CONFIG_CONTINUOUS_UPLINK    0x02
 
 #define LORAWAN_PARAM_CHECK_PORT                    20
 #define LORAWAN_PARAM_CHECK_REPLY_PORT              23
@@ -70,6 +76,11 @@ extern int SAMPLE_INTERVAL_MS;
 extern int TRANSMIT_INTERVAL_MS;
 extern float thresholdLevel;
 extern uint16_t confUplinkCounter;
+
+extern float thresholdLevelHigh;
+extern float thresholdLevelLow;
+extern int samplingMethod;
+extern int measurementMethod;
 
 extern bool isConfigMode;
 extern int PWX_TX_INTERVAL;

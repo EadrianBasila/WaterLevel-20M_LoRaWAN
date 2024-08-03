@@ -632,21 +632,55 @@ SecureElementStatus_t SecureElementInit( SecureElementNvmData_t *nvm )
 			TRANSMIT_INTERVAL_MS = FlashNVM.pwxTxInterval;
 		}
 		MW_LOG( TS_OFF, VLEVEL_M, "###### TX Interval: %u \r\n", TRANSMIT_INTERVAL_MS);
+		HAL_Delay(100);
 
 		if(FlashNVM.pwxCnfUplinkCount != 0 && FlashNVM.pwxCnfUplinkCount != 65535){
 			MAX_UPLINK_BEFORE_CONFIRMED = FlashNVM.pwxCnfUplinkCount;
 		}
 		MW_LOG( TS_OFF, VLEVEL_M, "###### Uplinks before Confirmed Uplink: %u \r\n", MAX_UPLINK_BEFORE_CONFIRMED);
+		HAL_Delay(100);
 
 		if(FlashNVM.pwxSamplingCount != 0 && FlashNVM.pwxSamplingCount != 65535){
 			MAX_WATER_LEVEL_SAMPLES = FlashNVM.pwxSamplingCount;
 		}
 		MW_LOG( TS_OFF, VLEVEL_M, "###### Sampling Counts before TX: %u \r\n", MAX_WATER_LEVEL_SAMPLES);
+		HAL_Delay(100);
 
-		if(FlashNVM.pwxWaterLevelThreshold != 0 && FlashNVM.pwxWaterLevelThreshold != 65535){
-			thresholdLevel = FlashNVM.pwxWaterLevelThreshold;
+		if(FlashNVM.pwxSamplingMethod != 65535){
+			samplingMethod = FlashNVM.pwxSamplingMethod;
+		} else {
+			samplingMethod = 0;
 		}
-		MW_LOG( TS_OFF, VLEVEL_M, "###### Water Level Threshold: %u \r\n", thresholdLevel);
+		MW_LOG( TS_OFF, VLEVEL_M, "###### Sampling Method: %u \r\n", samplingMethod);
+		HAL_Delay(100);
+
+		if(FlashNVM.pwxMeasurementMethod != 65535){
+			measurementMethod = FlashNVM.pwxMeasurementMethod;
+		} else {
+			measurementMethod = 0;
+		}
+		MW_LOG( TS_OFF, VLEVEL_M, "###### Measurement Method: %u \r\n", measurementMethod);
+		HAL_Delay(100);
+//		if(FlashNVM.pwxWaterLevelThreshold != 0 && FlashNVM.pwxWaterLevelThreshold != 65535){
+//			thresholdLevel = FlashNVM.pwxWaterLevelThreshold;
+//		}
+//		MW_LOG( TS_OFF, VLEVEL_M, "###### Water Level Threshold: %u \r\n", thresholdLevel);
+
+		if(FlashNVM.pwxWaterLevelThresholdHigh > 0 && FlashNVM.pwxWaterLevelThresholdHigh != 65535){
+			thresholdLevelHigh = FlashNVM.pwxWaterLevelThresholdHigh;
+		}else{
+			thresholdLevelHigh = 15.0;
+		}
+		MW_LOG( TS_OFF, VLEVEL_M, "###### Water Level High Threshold: %u \r\n", FlashNVM.pwxWaterLevelThresholdHigh);
+		HAL_Delay(100);
+
+		if(FlashNVM.pwxWaterLevelThresholdLow > 0 && FlashNVM.pwxWaterLevelThresholdLow != 65535){
+			thresholdLevelLow = FlashNVM.pwxWaterLevelThresholdLow;
+		}else{
+			thresholdLevelLow = 0.0;
+		}
+		MW_LOG( TS_OFF, VLEVEL_M, "###### Water Level Low Threshold: %u \r\n", FlashNVM.pwxWaterLevelThresholdLow);
+		HAL_Delay(100);
 
 	} else {
 		MW_LOG(TS_OFF, VLEVEL_M, "FAILED READING FLASH \r\n");

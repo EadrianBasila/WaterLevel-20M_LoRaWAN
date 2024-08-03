@@ -35,7 +35,7 @@
 /* USER CODE BEGIN PTD */
 
 extern uint8_t charRx;
-int PWX_TX_INTERVAL = 30000; // place holder value
+int PWX_TX_INTERVAL 			= 30000; // place holder value
 int MAX_UPLINK_BEFORE_CONFIRMED = 4; //every hour
 
 //Transmission
@@ -43,12 +43,19 @@ int MAX_WATER_LEVEL_SAMPLES 	= 5;
 int SAMPLE_INTERVAL_MS          = 180000;  	// 3 minutes in milliseconds
 int TRANSMIT_INTERVAL_MS        = 900000; 	// 15 minutes in milliseconds
 
-uint16_t confUplinkCounter = 0;
+//int MAX_WATER_LEVEL_SAMPLES 	= 1;	 //= 5;
+//int SAMPLE_INTERVAL_MS          = 60000; //= 180000;  	// 3 minutes in milliseconds
+//int TRANSMIT_INTERVAL_MS        = 60000; //= 900000; 	// 15 minutes in milliseconds
+
+float thresholdLevelHigh		= 15.0;
+float thresholdLevelLow			= 0.0;
+uint16_t confUplinkCounter 		= 0;
+int samplingMethod				= 0;
+int measurementMethod			= 0;
 
 uint8_t modbus_buffer[300];
 SecureElementNvmData_t DeviceParamsNVM;
 bool isTxSuccess = false;
-uint8_t SECTION_TO_SEND = BOARD_DIAGNOSTICS;
 
 static uint8_t AppDataBuffer[LORAWAN_APP_DATA_BUFFER_MAX_SIZE];
 static LmHandlerAppData_t AppData = { 0, 0, AppDataBuffer };

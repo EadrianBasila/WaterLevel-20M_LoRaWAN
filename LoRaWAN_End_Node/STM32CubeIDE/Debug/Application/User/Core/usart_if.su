@@ -5,4 +5,4 @@ C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/Core/Src/usa
 C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/Core/Src/usart_if.c:146:6:vcom_Trace	8	static
 C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/Core/Src/usart_if.c:205:6:vcom_Resume	8	static
 C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/Core/Src/usart_if.c:226:6:HAL_UART_TxCpltCallback	8	static
-C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/Core/Src/usart_if.c:241:6:HAL_UART_RxCpltCallback	1384	static
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/Core/Src/usart_if.c:241:6:HAL_UART_RxCpltCallback	1392	static

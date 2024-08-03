@@ -163,8 +163,12 @@ typedef struct sSecureElementNvCtx
     uint64_t pwxTxInterval;
     uint64_t pwxHeartbeatInterval;
     uint16_t pwxCnfUplinkCount;
-    uint16_t pwxWaterLevelThreshold;
-    uint8_t pwxSensingMode;
+    //uint16_t pwxWaterLevelThreshold;
+    uint16_t pwxWaterLevelThresholdHigh;
+    uint16_t pwxWaterLevelThresholdLow;
+    uint8_t  pwxSensingMode;
+    uint8_t	 pwxSamplingMethod;
+    uint8_t	 pwxMeasurementMethod;
     uint16_t pwxSamplingCount;
 
 } SecureElementNvmData_t;
