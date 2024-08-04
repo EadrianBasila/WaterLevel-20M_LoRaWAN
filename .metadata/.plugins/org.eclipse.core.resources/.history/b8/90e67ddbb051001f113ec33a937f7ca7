@@ -75,7 +75,7 @@ int transmissionType			= 0;		// 0: Scheduled	; 1: Unscheduled ; 2: System Diagno
 bool skipScheduledTransmission	= false;
 bool sendSystemDiagnostic		= false;
 bool isLevelBreached			= false;
-bool isModbusUnresponsive			= false;
+bool isModbusDefective			= false;
 uint8_t systemDiagnostic 		= 0;
 
 //! LTC Variables
@@ -208,7 +208,7 @@ FLASH_IF_StatusTypedef write_devnonce_to_flash(uint32_t devnonce) {
  *  Function that checks if Modbus sensor is working or not
  */
 
-void checkModbus(void){
+void CheckModbus(void){
 	int defective = 0;
 	for (int i = 0; i < 10; i++) {
 	    if(waterLevelSamples[i] <= 0.0){
@@ -216,10 +216,10 @@ void checkModbus(void){
 	    }
 	}
 	if (defective >= 10){
-		isModbusUnresponsive = true;
+		isModbusDefective = true;
 		 APP_LOG(TS_OFF, VLEVEL_M, "Error: Modbus Sensor Unresponsive\r\n");
 	} else {
-		isModbusUnresponsive = false;
+		isModbusDefective = false;
 		APP_LOG(TS_OFF, VLEVEL_M,  "Modbus Sensor is Responsive\r\n");
 	}
 }
@@ -669,22 +669,13 @@ void fetchSensorDataOnce() {
 	uint8_t ModbusCommand[8] = {0x01,0x03,0x00,0x03,0x00,0x01,0x74,0x0A};
 	uint16_t CommandSize = sizeof(ModbusCommand) / sizeof(ModbusCommand[0]);
 	float waterLevels[readingCount];
-	int modbusUnresponsiveCount = 0;
+
+	APP_LOG(TS_OFF, VLEVEL_M, "\r\nINITIAL DATA FETCH\r\n");
 
 	for(int i = 0; i < 10;  i++)	{
 		APP_LOG(TS_OFF, VLEVEL_M, " Data Fetch: %d\r\n", i+1);
 		sendRaw(ModbusCommand, CommandSize, &ModbusResp);
 		HAL_Delay(250);
-
-	    // Check if Modbus response is valid
-	    int respLength = ModbusResp.rxIndex;
-	    if (respLength <= 0) {
-	        modbusUnresponsiveCount += 1;
-	        APP_LOG(TS_OFF, VLEVEL_M, "No response from Modbus.\r\n");
-	        continue;
-	    } else {
-	        modbusUnresponsiveCount = 0; // Reset count on successful response
-	    }
 
 		APP_LOG(TS_OFF, VLEVEL_M, " MODBUS RESPONSE (Hex): ");
 		for (int x = 0; x < ModbusResp.rxIndex; x++){
@@ -701,12 +692,6 @@ void fetchSensorDataOnce() {
 
 		APP_LOG(TS_OFF, VLEVEL_M, " \r\n");
 		HAL_Delay(1000);
-	}
-
-	if(modbusUnresponsiveCount >= 3){
-		isModbusUnresponsive = true;
-		sendSystemDiagnostic = true;
-		APP_LOG(TS_OFF, VLEVEL_M, "Modbus is Unresponsive.\r\n");
 	}
 
 	sortArray(waterLevels, 10);
@@ -730,6 +715,9 @@ void fetchSensorDataOnce() {
 
 	sprintf((char*)msg, "Final Water Level: %f \r\n", waterLevel);
 	HAL_UART_Transmit(&huart2, msg, strlen((char*)msg), 1000);
+
+	waterLevelSamples[sampleIndex] = waterLevel;
+	sampleIndex += 1;
 }
 
 
@@ -748,22 +736,11 @@ void fetchSensorDataDifferential(void) {
 	float waterLevelChange;
 	float waterLevels[readingCount];
 	float differentialLevels[readingCount];
-	int modbusUnresponsiveCount = 0;
 
 	for (int i = 0; i < 10; i++) {
 	    APP_LOG(TS_OFF, VLEVEL_M, " Data Fetch: %d\r\n", i + 1);
 	    sendRaw(ModbusCommand, CommandSize, &ModbusResp);
 	    HAL_Delay(250);
-
-	    // Check if Modbus response is valid
-	    int respLength = ModbusResp.rxIndex;
-	    if (respLength <= 0) {
-	        modbusUnresponsiveCount += 1;
-	        APP_LOG(TS_OFF, VLEVEL_M, "No response from Modbus.\r\n");
-	        continue;
-	    } else {
-	        modbusUnresponsiveCount = 0; // Reset count on successful response
-	    }
 
 	    APP_LOG(TS_OFF, VLEVEL_M, " MODBUS RESPONSE (Hex): ");
 	    for (int x = 0; x < ModbusResp.rxIndex; x++) {
@@ -782,14 +759,6 @@ void fetchSensorDataDifferential(void) {
 	    APP_LOG(TS_OFF, VLEVEL_M, " \r\n");
 	    HAL_Delay(1000);
 	}
-
-	if(modbusUnresponsiveCount >= 3){
-		isModbusUnresponsive = true;
-		sendSystemDiagnostic = true;
-		APP_LOG(TS_OFF, VLEVEL_M, "Modbus is Unresponsive.\r\n");
-	}
-
-	//checkModbus();
 
 	// Sort the array
 	sortArray(differentialLevels, 10);
@@ -851,22 +820,11 @@ void fetchSensorData(void) {
 	uint8_t ModbusCommand[8] = {0x01,0x03,0x00,0x03,0x00,0x01,0x74,0x0A};
 	uint16_t CommandSize = sizeof(ModbusCommand) / sizeof(ModbusCommand[0]);
 	float waterLevels[readingCount];
-	int modbusUnresponsiveCount = 0;
 
 	for(int i = 0; i < 10;  i++)	{
 		APP_LOG(TS_OFF, VLEVEL_M, " Data Fetch: %d\r\n", i+1);
 		sendRaw(ModbusCommand, CommandSize, &ModbusResp);
 		HAL_Delay(250);
-
-	    // Check if Modbus response is valid
-	    int respLength = ModbusResp.rxIndex;
-	    if (respLength <= 0) {
-	        modbusUnresponsiveCount += 1;
-	        APP_LOG(TS_OFF, VLEVEL_M, "No response from Modbus.\r\n");
-	        continue;
-	    } else {
-	        modbusUnresponsiveCount = 0; // Reset count on successful response
-	    }
 
 		APP_LOG(TS_OFF, VLEVEL_M, " MODBUS RESPONSE (Hex): ");
 		for (int x = 0; x < ModbusResp.rxIndex; x++){
@@ -885,11 +843,7 @@ void fetchSensorData(void) {
 		HAL_Delay(1000);
 	}
 
-	if(modbusUnresponsiveCount >= 3){
-		isModbusUnresponsive = true;
-		sendSystemDiagnostic = true;
-		APP_LOG(TS_OFF, VLEVEL_M, "Modbus is Unresponsive.\r\n");
-	}
+	//CheckModbus();
 
 	/*!
 	 * Reply Format
@@ -1064,7 +1018,10 @@ void fetchSensorData(void) {
 
 	if(sendUnscheduledTransmission == true){
 		while(sendUnscheduledTransmission!= false){
-			 HAL_Delay(100);
+			LmHandlerErrorStatus_t status = LORAMAC_HANDLER_ERROR;
+			UTIL_TIMER_Time_t nextTxIn = 0;
+			APP_LOG(TS_OFF, VLEVEL_M, "[!]  LM HANDLER IS BUSY! \r\n");
+			HAL_Delay(100);
 			  if (LmHandlerIsBusy() == false)
 			  {
 				APP_LOG(TS_OFF, VLEVEL_M, "============================================= \r\n");
@@ -1086,10 +1043,6 @@ void fetchSensorData(void) {
 			    waterLevelMin	 	= waterLevelMin 	* 100;
 			    waterLevelMax	 	= waterLevelMax 	* 100;
 
-			    if(transmissionType == 1 && sendSystemDiagnostic == true){
-			    	transmissionType = 3;
-			    }
-
 				uint8_t i = 0;
 				AppData.Buffer[i++] = (uint8_t)transmissionType;
 				AppData.Buffer[i++] = (uint8_t)((uint16_t)waterLevelLatest >> 8);
@@ -1100,23 +1053,6 @@ void fetchSensorData(void) {
 				AppData.Buffer[i++] = (uint8_t)((uint16_t)waterLevelMin & 0xFF);
 				AppData.Buffer[i++] = (uint8_t)((uint16_t)waterLevelMax >> 8);
 				AppData.Buffer[i++] = (uint8_t)((uint16_t)waterLevelMax & 0xFF);
-				if(transmissionType = 3){
-					int isZeroCalib  = 0;
-					int measureMeth  = measurementMethod == 0 ? 0 : 1;
-					int samplingMeth = samplingMethod == 0 ? 0 : 1;
-					int threshMeth	 = continuousMode == true ? 1 : 0;
-					int modbusError  = isModbusUnresponsive == true ? 1 : 0;
-					int levelBreach  = isLevelBreached == true ? 1 : 0;
-
-					systemDiagnostic = (isZeroCalib << 5)  |
-									   (measureMeth << 4)  |
-									   (samplingMeth << 3) |
-									   (threshMeth  << 2)  |
-									   (modbusError << 1)  |
-									   (levelBreach << 0);
-					AppData.Buffer[i++] = (uint8_t)systemDiagnostic;
-					sendSystemDiagnostic = false;
-				}
 				AppData.BufferSize = i;
 
 				sprintf((char*)msg, "Payload Buffer Size: %u\r\n\r\n", AppData.BufferSize);
@@ -1135,9 +1071,7 @@ void fetchSensorData(void) {
 				LmHandlerSend(&AppData, LmHandlerParams.IsTxConfirmed, false);
 				sendUnscheduledTransmission = false;
 			  }
-			APP_LOG(TS_OFF, VLEVEL_M, "[!]  LM HANDLER IS BUSY! \r\n");
-			HAL_Delay(100);
-
+			  HAL_Delay(100);
 		}
 
 	}
@@ -2194,9 +2128,6 @@ static void SendTxData(void)
 			    _doneScanning = false;
 
 			    if(hasJoined == false){
-			    	APP_LOG(TS_OFF, VLEVEL_M, "--------------------------------\r\n");
-			    	APP_LOG(TS_OFF, VLEVEL_M, "     INITIAL DATA FETCH \r\n");
-			    	APP_LOG(TS_OFF, VLEVEL_M, "--------------------------------\r\n");
 			    	fetchSensorDataOnce();
 			    }
 			    _doneScanning = true;
@@ -2210,6 +2141,7 @@ static void SendTxData(void)
 			    	}
 
 			    /* Prepare Data */
+
 			    waterLevelLatest 	= waterLevelLatest * 100;
 			    waterLevel 		 	= waterLevel * 100;
 			    waterLevelMin	 	= waterLevelMin * 100;
@@ -2221,7 +2153,7 @@ static void SendTxData(void)
 					int measureMeth  = measurementMethod == 0 ? 0 : 1;
 					int samplingMeth = samplingMethod == 0 ? 0 : 1;
 					int threshMeth	 = continuousMode == true ? 1 : 0;
-					int modbusError  = isModbusUnresponsive == true ? 1 : 0;
+					int modbusError  = isModbusDefective == true ? 1 : 0;
 					int levelBreach  = isLevelBreached == true ? 1 : 0;
 
 					systemDiagnostic = (isZeroCalib << 5) |

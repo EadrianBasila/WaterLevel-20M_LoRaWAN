@@ -14502,3 +14502,558 @@ arm-none-eabi-size  LoRaWAN_End_Node.elf
  125848	    832	  13896	 140576	  22520	LoRaWAN_End_Node.elf
 Finished building: default.size.stdout
  
+23:55:52 **** Incremental Build of configuration Debug for project LoRaWAN_End_Node ****
+make -j8 all 
+arm-none-eabi-gcc "C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DCORE_CM4 -DUSE_HAL_DRIVER -DSTM32WL55xx -c -I../../Core/Inc -I../../LoRaWAN/App -I../../LoRaWAN/Target -I../../Drivers/STM32WLxx_HAL_Driver/Inc -I../../Drivers/STM32WLxx_HAL_Driver/Inc/Legacy -I../../Utilities/trace/adv_trace -I../../Utilities/misc -I../../Utilities/sequencer -I../../Utilities/timer -I../../Utilities/lpm/tiny_lpm -I../../Middlewares/Third_Party/LoRaWAN/LmHandler/Packages -I../../Drivers/CMSIS/Device/ST/STM32WLxx/Include -I../../Middlewares/Third_Party/LoRaWAN/Crypto -I../../Middlewares/Third_Party/LoRaWAN/Mac/Region -I../../Middlewares/Third_Party/LoRaWAN/Mac -I../../Middlewares/Third_Party/LoRaWAN/LmHandler -I../../Middlewares/Third_Party/LoRaWAN/Utilities -I../../Middlewares/Third_Party/SubGHz_Phy -I../../Middlewares/Third_Party/SubGHz_Phy/stm32_radio_driver -I../../Drivers/CMSIS/Include -I../../Drivers/BSP/STM32WLxx_Nucleo -Og -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Application/User/LoRaWAN/App/lora_app.d" -MT"Application/User/LoRaWAN/App/lora_app.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Application/User/LoRaWAN/App/lora_app.o"
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:44:
+../../Middlewares/Third_Party/LoRaWAN/Mac/LoRaMacCrypto.h:75: warning: "FLASH_BASE" redefined
+   75 | #define FLASH_BASE                              ((uint32_t)0x0803B7FF)
+      | 
+In file included from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:100,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wl55xx.h:928: note: this is the location of the previous definition
+  928 | #define FLASH_BASE              0x08000000UL   /*!< FLASH(up to 256 KB) base address */
+      | 
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:44:
+../../Middlewares/Third_Party/LoRaWAN/Mac/LoRaMacCrypto.h:76: warning: "FLASH_SIZE" redefined
+   76 | #define FLASH_SIZE                              ((uint32_t)0x00080000)
+      | 
+In file included from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:100,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wl55xx.h:934: note: this is the location of the previous definition
+  934 | #define FLASH_SIZE              (((*((uint32_t *)FLASHSIZE_BASE)) & 0xFFFFU) << 10U)
+      | 
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:45:
+../../Core/Inc/project_config.h:11:32: warning: extra tokens at end of #include directive
+   11 | #include "secure-element-nvm.h";
+      |                                ^
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchSensorDataDifferential':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:734:15: warning: variable 'waterLevels' set but not used [-Wunused-but-set-variable]
+  734 |         float waterLevels[readingCount];
+      |               ^~~~~~~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchSensorData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1019:43: warning: unused variable 'nextTxIn' [-Wunused-variable]
+ 1019 |                         UTIL_TIMER_Time_t nextTxIn = 0;
+      |                                           ^~~~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1018:48: warning: unused variable 'status' [-Wunused-variable]
+ 1018 |                         LmHandlerErrorStatus_t status = LORAMAC_HANDLER_ERROR;
+      |                                                ^~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchLTCData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1218:91: warning: passing argument 5 of 'HAL_I2C_Mem_Write' makes pointer from integer without a cast [-Wint-conversion]
+ 1218 |          if (HAL_I2C_Mem_Write(&hi2c1, 0x68 << 1, register_address, I2C_MEMADD_SIZE_8BIT, 0x05, 1, HAL_MAX_DELAY) == HAL_OK) {
+      |                                                                                           ^~~~
+      |                                                                                           |
+      |                                                                                           int
+In file included from ../../Core/Inc/stm32wlxx_hal_conf.h:241,
+                 from ../../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_hal.h:29,
+                 from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:266,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_hal_i2c.h:634:67: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'int'
+  634 |                                     uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                          ~~~~~~~~~^~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'SendTxData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:2120:59: warning: pointer targets in passing argument 1 of 'LmHandlerGetTxDatarate' differ in signedness [-Wpointer-sign]
+ 2120 |                                 if(LmHandlerGetTxDatarate(&currentDR) == LORAMAC_HANDLER_SUCCESS){
+      |                                                           ^~~~~~~~~~
+      |                                                           |
+      |                                                           uint8_t * {aka unsigned char *}
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:32:
+../../Middlewares/Third_Party/LoRaWAN/LmHandler/LmHandler.h:419:56: note: expected 'int8_t *' {aka 'signed char *'} but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+  419 | LmHandlerErrorStatus_t LmHandlerGetTxDatarate( int8_t *txDatarate );
+      |                                                ~~~~~~~~^~~~~~~~~~
+At top level:
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:587:16: warning: 'AppLedStateOn' defined but not used [-Wunused-variable]
+  587 | static uint8_t AppLedStateOn = RESET;
+      |                ^~~~~~~~~~~~~
+arm-none-eabi-gcc -o "LoRaWAN_End_Node.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Owner\Music\workspace_waterlevel20m-final\LoRaWAN_End_Node\STM32CubeIDE\STM32WL55JCIX_FLASH.ld" --specs=nosys.specs -Wl,-Map="LoRaWAN_End_Node.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: LoRaWAN_End_Node.elf
+ 
+arm-none-eabi-size  LoRaWAN_End_Node.elf 
+arm-none-eabi-objdump -h -S LoRaWAN_End_Node.elf  > "LoRaWAN_End_Node.list"
+arm-none-eabi-objcopy  -O ihex LoRaWAN_End_Node.elf  "LoRaWAN_End_Node.hex"
+   text	   data	    bss	    dec	    hex	filename
+ 125984	    832	  13896	 140712	  225a8	LoRaWAN_End_Node.elf
+arm-none-eabi-objcopy  -O binary LoRaWAN_End_Node.elf  "LoRaWAN_End_Node.bin"
+Finished building: default.size.stdout
+ 
+Finished building: LoRaWAN_End_Node.hex
+Finished building: LoRaWAN_End_Node.bin
+ 
+ 
+Finished building: LoRaWAN_End_Node.list
+ 
+23:56:21 **** Incremental Build of configuration Debug for project LoRaWAN_End_Node ****
+make -j8 all 
+arm-none-eabi-gcc "C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DCORE_CM4 -DUSE_HAL_DRIVER -DSTM32WL55xx -c -I../../Core/Inc -I../../LoRaWAN/App -I../../LoRaWAN/Target -I../../Drivers/STM32WLxx_HAL_Driver/Inc -I../../Drivers/STM32WLxx_HAL_Driver/Inc/Legacy -I../../Utilities/trace/adv_trace -I../../Utilities/misc -I../../Utilities/sequencer -I../../Utilities/timer -I../../Utilities/lpm/tiny_lpm -I../../Middlewares/Third_Party/LoRaWAN/LmHandler/Packages -I../../Drivers/CMSIS/Device/ST/STM32WLxx/Include -I../../Middlewares/Third_Party/LoRaWAN/Crypto -I../../Middlewares/Third_Party/LoRaWAN/Mac/Region -I../../Middlewares/Third_Party/LoRaWAN/Mac -I../../Middlewares/Third_Party/LoRaWAN/LmHandler -I../../Middlewares/Third_Party/LoRaWAN/Utilities -I../../Middlewares/Third_Party/SubGHz_Phy -I../../Middlewares/Third_Party/SubGHz_Phy/stm32_radio_driver -I../../Drivers/CMSIS/Include -I../../Drivers/BSP/STM32WLxx_Nucleo -Og -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Application/User/LoRaWAN/App/lora_app.d" -MT"Application/User/LoRaWAN/App/lora_app.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Application/User/LoRaWAN/App/lora_app.o"
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:44:
+../../Middlewares/Third_Party/LoRaWAN/Mac/LoRaMacCrypto.h:75: warning: "FLASH_BASE" redefined
+   75 | #define FLASH_BASE                              ((uint32_t)0x0803B7FF)
+      | 
+In file included from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:100,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wl55xx.h:928: note: this is the location of the previous definition
+  928 | #define FLASH_BASE              0x08000000UL   /*!< FLASH(up to 256 KB) base address */
+      | 
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:44:
+../../Middlewares/Third_Party/LoRaWAN/Mac/LoRaMacCrypto.h:76: warning: "FLASH_SIZE" redefined
+   76 | #define FLASH_SIZE                              ((uint32_t)0x00080000)
+      | 
+In file included from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:100,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wl55xx.h:934: note: this is the location of the previous definition
+  934 | #define FLASH_SIZE              (((*((uint32_t *)FLASHSIZE_BASE)) & 0xFFFFU) << 10U)
+      | 
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:45:
+../../Core/Inc/project_config.h:11:32: warning: extra tokens at end of #include directive
+   11 | #include "secure-element-nvm.h";
+      |                                ^
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchSensorDataDifferential':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:734:15: warning: variable 'waterLevels' set but not used [-Wunused-but-set-variable]
+  734 |         float waterLevels[readingCount];
+      |               ^~~~~~~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchSensorData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1021:43: warning: unused variable 'nextTxIn' [-Wunused-variable]
+ 1021 |                         UTIL_TIMER_Time_t nextTxIn = 0;
+      |                                           ^~~~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1020:48: warning: unused variable 'status' [-Wunused-variable]
+ 1020 |                         LmHandlerErrorStatus_t status = LORAMAC_HANDLER_ERROR;
+      |                                                ^~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchLTCData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1220:91: warning: passing argument 5 of 'HAL_I2C_Mem_Write' makes pointer from integer without a cast [-Wint-conversion]
+ 1220 |          if (HAL_I2C_Mem_Write(&hi2c1, 0x68 << 1, register_address, I2C_MEMADD_SIZE_8BIT, 0x05, 1, HAL_MAX_DELAY) == HAL_OK) {
+      |                                                                                           ^~~~
+      |                                                                                           |
+      |                                                                                           int
+In file included from ../../Core/Inc/stm32wlxx_hal_conf.h:241,
+                 from ../../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_hal.h:29,
+                 from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:266,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_hal_i2c.h:634:67: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'int'
+  634 |                                     uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                          ~~~~~~~~~^~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'SendTxData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:2122:59: warning: pointer targets in passing argument 1 of 'LmHandlerGetTxDatarate' differ in signedness [-Wpointer-sign]
+ 2122 |                                 if(LmHandlerGetTxDatarate(&currentDR) == LORAMAC_HANDLER_SUCCESS){
+      |                                                           ^~~~~~~~~~
+      |                                                           |
+      |                                                           uint8_t * {aka unsigned char *}
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:32:
+../../Middlewares/Third_Party/LoRaWAN/LmHandler/LmHandler.h:419:56: note: expected 'int8_t *' {aka 'signed char *'} but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+  419 | LmHandlerErrorStatus_t LmHandlerGetTxDatarate( int8_t *txDatarate );
+      |                                                ~~~~~~~~^~~~~~~~~~
+At top level:
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:587:16: warning: 'AppLedStateOn' defined but not used [-Wunused-variable]
+  587 | static uint8_t AppLedStateOn = RESET;
+      |                ^~~~~~~~~~~~~
+arm-none-eabi-gcc -o "LoRaWAN_End_Node.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Owner\Music\workspace_waterlevel20m-final\LoRaWAN_End_Node\STM32CubeIDE\STM32WL55JCIX_FLASH.ld" --specs=nosys.specs -Wl,-Map="LoRaWAN_End_Node.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: LoRaWAN_End_Node.elf
+ 
+arm-none-eabi-size  LoRaWAN_End_Node.elf 
+arm-none-eabi-objdump -h -S LoRaWAN_End_Node.elf  > "LoRaWAN_End_Node.list"
+arm-none-eabi-objcopy  -O ihex LoRaWAN_End_Node.elf  "LoRaWAN_End_Node.hex"
+   text	   data	    bss	    dec	    hex	filename
+ 125984	    832	  13896	 140712	  225a8	LoRaWAN_End_Node.elf
+arm-none-eabi-objcopy  -O binary LoRaWAN_End_Node.elf  "LoRaWAN_End_Node.bin"
+Finished building: default.size.stdout
+ 
+Finished building: LoRaWAN_End_Node.hex
+Finished building: LoRaWAN_End_Node.bin
+ 
+ 
+Finished building: LoRaWAN_End_Node.list
+ 
+23:56:47 **** Incremental Build of configuration Debug for project LoRaWAN_End_Node ****
+make -j8 all 
+arm-none-eabi-gcc "C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DCORE_CM4 -DUSE_HAL_DRIVER -DSTM32WL55xx -c -I../../Core/Inc -I../../LoRaWAN/App -I../../LoRaWAN/Target -I../../Drivers/STM32WLxx_HAL_Driver/Inc -I../../Drivers/STM32WLxx_HAL_Driver/Inc/Legacy -I../../Utilities/trace/adv_trace -I../../Utilities/misc -I../../Utilities/sequencer -I../../Utilities/timer -I../../Utilities/lpm/tiny_lpm -I../../Middlewares/Third_Party/LoRaWAN/LmHandler/Packages -I../../Drivers/CMSIS/Device/ST/STM32WLxx/Include -I../../Middlewares/Third_Party/LoRaWAN/Crypto -I../../Middlewares/Third_Party/LoRaWAN/Mac/Region -I../../Middlewares/Third_Party/LoRaWAN/Mac -I../../Middlewares/Third_Party/LoRaWAN/LmHandler -I../../Middlewares/Third_Party/LoRaWAN/Utilities -I../../Middlewares/Third_Party/SubGHz_Phy -I../../Middlewares/Third_Party/SubGHz_Phy/stm32_radio_driver -I../../Drivers/CMSIS/Include -I../../Drivers/BSP/STM32WLxx_Nucleo -Og -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Application/User/LoRaWAN/App/lora_app.d" -MT"Application/User/LoRaWAN/App/lora_app.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Application/User/LoRaWAN/App/lora_app.o"
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:44:
+../../Middlewares/Third_Party/LoRaWAN/Mac/LoRaMacCrypto.h:75: warning: "FLASH_BASE" redefined
+   75 | #define FLASH_BASE                              ((uint32_t)0x0803B7FF)
+      | 
+In file included from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:100,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wl55xx.h:928: note: this is the location of the previous definition
+  928 | #define FLASH_BASE              0x08000000UL   /*!< FLASH(up to 256 KB) base address */
+      | 
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:44:
+../../Middlewares/Third_Party/LoRaWAN/Mac/LoRaMacCrypto.h:76: warning: "FLASH_SIZE" redefined
+   76 | #define FLASH_SIZE                              ((uint32_t)0x00080000)
+      | 
+In file included from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:100,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wl55xx.h:934: note: this is the location of the previous definition
+  934 | #define FLASH_SIZE              (((*((uint32_t *)FLASHSIZE_BASE)) & 0xFFFFU) << 10U)
+      | 
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:45:
+../../Core/Inc/project_config.h:11:32: warning: extra tokens at end of #include directive
+   11 | #include "secure-element-nvm.h";
+      |                                ^
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchSensorDataDifferential':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:736:15: warning: variable 'waterLevels' set but not used [-Wunused-but-set-variable]
+  736 |         float waterLevels[readingCount];
+      |               ^~~~~~~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchSensorData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1023:43: warning: unused variable 'nextTxIn' [-Wunused-variable]
+ 1023 |                         UTIL_TIMER_Time_t nextTxIn = 0;
+      |                                           ^~~~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1022:48: warning: unused variable 'status' [-Wunused-variable]
+ 1022 |                         LmHandlerErrorStatus_t status = LORAMAC_HANDLER_ERROR;
+      |                                                ^~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchLTCData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1222:91: warning: passing argument 5 of 'HAL_I2C_Mem_Write' makes pointer from integer without a cast [-Wint-conversion]
+ 1222 |          if (HAL_I2C_Mem_Write(&hi2c1, 0x68 << 1, register_address, I2C_MEMADD_SIZE_8BIT, 0x05, 1, HAL_MAX_DELAY) == HAL_OK) {
+      |                                                                                           ^~~~
+      |                                                                                           |
+      |                                                                                           int
+In file included from ../../Core/Inc/stm32wlxx_hal_conf.h:241,
+                 from ../../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_hal.h:29,
+                 from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:266,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_hal_i2c.h:634:67: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'int'
+  634 |                                     uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                          ~~~~~~~~~^~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'SendTxData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:2124:59: warning: pointer targets in passing argument 1 of 'LmHandlerGetTxDatarate' differ in signedness [-Wpointer-sign]
+ 2124 |                                 if(LmHandlerGetTxDatarate(&currentDR) == LORAMAC_HANDLER_SUCCESS){
+      |                                                           ^~~~~~~~~~
+      |                                                           |
+      |                                                           uint8_t * {aka unsigned char *}
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:32:
+../../Middlewares/Third_Party/LoRaWAN/LmHandler/LmHandler.h:419:56: note: expected 'int8_t *' {aka 'signed char *'} but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+  419 | LmHandlerErrorStatus_t LmHandlerGetTxDatarate( int8_t *txDatarate );
+      |                                                ~~~~~~~~^~~~~~~~~~
+At top level:
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:587:16: warning: 'AppLedStateOn' defined but not used [-Wunused-variable]
+  587 | static uint8_t AppLedStateOn = RESET;
+      |                ^~~~~~~~~~~~~
+arm-none-eabi-gcc -o "LoRaWAN_End_Node.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Owner\Music\workspace_waterlevel20m-final\LoRaWAN_End_Node\STM32CubeIDE\STM32WL55JCIX_FLASH.ld" --specs=nosys.specs -Wl,-Map="LoRaWAN_End_Node.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: LoRaWAN_End_Node.elf
+ 
+arm-none-eabi-size  LoRaWAN_End_Node.elf 
+arm-none-eabi-objdump -h -S LoRaWAN_End_Node.elf  > "LoRaWAN_End_Node.list"
+arm-none-eabi-objcopy  -O ihex LoRaWAN_End_Node.elf  "LoRaWAN_End_Node.hex"
+   text	   data	    bss	    dec	    hex	filename
+ 125984	    832	  13896	 140712	  225a8	LoRaWAN_End_Node.elf
+arm-none-eabi-objcopy  -O binary LoRaWAN_End_Node.elf  "LoRaWAN_End_Node.bin"
+Finished building: default.size.stdout
+ 
+Finished building: LoRaWAN_End_Node.hex
+Finished building: LoRaWAN_End_Node.bin
+ 
+ 
+Finished building: LoRaWAN_End_Node.list
+ 
+15:00:26 **** Incremental Build of configuration Debug for project LoRaWAN_End_Node ****
+make -j8 all 
+arm-none-eabi-gcc "C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DCORE_CM4 -DUSE_HAL_DRIVER -DSTM32WL55xx -c -I../../Core/Inc -I../../LoRaWAN/App -I../../LoRaWAN/Target -I../../Drivers/STM32WLxx_HAL_Driver/Inc -I../../Drivers/STM32WLxx_HAL_Driver/Inc/Legacy -I../../Utilities/trace/adv_trace -I../../Utilities/misc -I../../Utilities/sequencer -I../../Utilities/timer -I../../Utilities/lpm/tiny_lpm -I../../Middlewares/Third_Party/LoRaWAN/LmHandler/Packages -I../../Drivers/CMSIS/Device/ST/STM32WLxx/Include -I../../Middlewares/Third_Party/LoRaWAN/Crypto -I../../Middlewares/Third_Party/LoRaWAN/Mac/Region -I../../Middlewares/Third_Party/LoRaWAN/Mac -I../../Middlewares/Third_Party/LoRaWAN/LmHandler -I../../Middlewares/Third_Party/LoRaWAN/Utilities -I../../Middlewares/Third_Party/SubGHz_Phy -I../../Middlewares/Third_Party/SubGHz_Phy/stm32_radio_driver -I../../Drivers/CMSIS/Include -I../../Drivers/BSP/STM32WLxx_Nucleo -Og -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Application/User/LoRaWAN/App/lora_app.d" -MT"Application/User/LoRaWAN/App/lora_app.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Application/User/LoRaWAN/App/lora_app.o"
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:44:
+../../Middlewares/Third_Party/LoRaWAN/Mac/LoRaMacCrypto.h:75: warning: "FLASH_BASE" redefined
+   75 | #define FLASH_BASE                              ((uint32_t)0x0803B7FF)
+      | 
+In file included from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:100,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wl55xx.h:928: note: this is the location of the previous definition
+  928 | #define FLASH_BASE              0x08000000UL   /*!< FLASH(up to 256 KB) base address */
+      | 
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:44:
+../../Middlewares/Third_Party/LoRaWAN/Mac/LoRaMacCrypto.h:76: warning: "FLASH_SIZE" redefined
+   76 | #define FLASH_SIZE                              ((uint32_t)0x00080000)
+      | 
+In file included from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:100,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wl55xx.h:934: note: this is the location of the previous definition
+  934 | #define FLASH_SIZE              (((*((uint32_t *)FLASHSIZE_BASE)) & 0xFFFFU) << 10U)
+      | 
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:45:
+../../Core/Inc/project_config.h:11:32: warning: extra tokens at end of #include directive
+   11 | #include "secure-element-nvm.h";
+      |                                ^
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchSensorDataDifferential':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:734:15: warning: variable 'waterLevels' set but not used [-Wunused-but-set-variable]
+  734 |         float waterLevels[readingCount];
+      |               ^~~~~~~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchSensorData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1030:60: error: 'currentDR' undeclared (first use in this function); did you mean 'currentTime'?
+ 1030 |                                 if(LmHandlerGetTxDatarate(&currentDR) == LORAMAC_HANDLER_SUCCESS){
+      |                                                            ^~~~~~~~~
+      |                                                            currentTime
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1030:60: note: each undeclared identifier is reported only once for each function it appears in
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1021:43: warning: unused variable 'nextTxIn' [-Wunused-variable]
+ 1021 |                         UTIL_TIMER_Time_t nextTxIn = 0;
+      |                                           ^~~~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1020:48: warning: unused variable 'status' [-Wunused-variable]
+ 1020 |                         LmHandlerErrorStatus_t status = LORAMAC_HANDLER_ERROR;
+      |                                                ^~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchLTCData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1223:91: warning: passing argument 5 of 'HAL_I2C_Mem_Write' makes pointer from integer without a cast [-Wint-conversion]
+ 1223 |          if (HAL_I2C_Mem_Write(&hi2c1, 0x68 << 1, register_address, I2C_MEMADD_SIZE_8BIT, 0x05, 1, HAL_MAX_DELAY) == HAL_OK) {
+      |                                                                                           ^~~~
+      |                                                                                           |
+      |                                                                                           int
+In file included from ../../Core/Inc/stm32wlxx_hal_conf.h:241,
+                 from ../../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_hal.h:29,
+                 from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:266,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_hal_i2c.h:634:67: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'int'
+  634 |                                     uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                          ~~~~~~~~~^~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'SendTxData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:2125:59: warning: pointer targets in passing argument 1 of 'LmHandlerGetTxDatarate' differ in signedness [-Wpointer-sign]
+ 2125 |                                 if(LmHandlerGetTxDatarate(&currentDR) == LORAMAC_HANDLER_SUCCESS){
+      |                                                           ^~~~~~~~~~
+      |                                                           |
+      |                                                           uint8_t * {aka unsigned char *}
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:32:
+../../Middlewares/Third_Party/LoRaWAN/LmHandler/LmHandler.h:419:56: note: expected 'int8_t *' {aka 'signed char *'} but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+  419 | LmHandlerErrorStatus_t LmHandlerGetTxDatarate( int8_t *txDatarate );
+      |                                                ~~~~~~~~^~~~~~~~~~
+At top level:
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:587:16: warning: 'AppLedStateOn' defined but not used [-Wunused-variable]
+  587 | static uint8_t AppLedStateOn = RESET;
+      |                ^~~~~~~~~~~~~
+make: *** [Application/User/LoRaWAN/App/subdir.mk:32: Application/User/LoRaWAN/App/lora_app.o] Error 1
+"make -j8 all" terminated with exit code 2. Build might be incomplete.
+15:39:30 **** Incremental Build of configuration Debug for project LoRaWAN_End_Node ****
+make -j8 all 
+arm-none-eabi-gcc "C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DCORE_CM4 -DUSE_HAL_DRIVER -DSTM32WL55xx -c -I../../Core/Inc -I../../LoRaWAN/App -I../../LoRaWAN/Target -I../../Drivers/STM32WLxx_HAL_Driver/Inc -I../../Drivers/STM32WLxx_HAL_Driver/Inc/Legacy -I../../Utilities/trace/adv_trace -I../../Utilities/misc -I../../Utilities/sequencer -I../../Utilities/timer -I../../Utilities/lpm/tiny_lpm -I../../Middlewares/Third_Party/LoRaWAN/LmHandler/Packages -I../../Drivers/CMSIS/Device/ST/STM32WLxx/Include -I../../Middlewares/Third_Party/LoRaWAN/Crypto -I../../Middlewares/Third_Party/LoRaWAN/Mac/Region -I../../Middlewares/Third_Party/LoRaWAN/Mac -I../../Middlewares/Third_Party/LoRaWAN/LmHandler -I../../Middlewares/Third_Party/LoRaWAN/Utilities -I../../Middlewares/Third_Party/SubGHz_Phy -I../../Middlewares/Third_Party/SubGHz_Phy/stm32_radio_driver -I../../Drivers/CMSIS/Include -I../../Drivers/BSP/STM32WLxx_Nucleo -Og -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Application/User/LoRaWAN/App/lora_app.d" -MT"Application/User/LoRaWAN/App/lora_app.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Application/User/LoRaWAN/App/lora_app.o"
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:44:
+../../Middlewares/Third_Party/LoRaWAN/Mac/LoRaMacCrypto.h:75: warning: "FLASH_BASE" redefined
+   75 | #define FLASH_BASE                              ((uint32_t)0x0803B7FF)
+      | 
+In file included from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:100,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wl55xx.h:928: note: this is the location of the previous definition
+  928 | #define FLASH_BASE              0x08000000UL   /*!< FLASH(up to 256 KB) base address */
+      | 
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:44:
+../../Middlewares/Third_Party/LoRaWAN/Mac/LoRaMacCrypto.h:76: warning: "FLASH_SIZE" redefined
+   76 | #define FLASH_SIZE                              ((uint32_t)0x00080000)
+      | 
+In file included from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:100,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wl55xx.h:934: note: this is the location of the previous definition
+  934 | #define FLASH_SIZE              (((*((uint32_t *)FLASHSIZE_BASE)) & 0xFFFFU) << 10U)
+      | 
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:45:
+../../Core/Inc/project_config.h:11:32: warning: extra tokens at end of #include directive
+   11 | #include "secure-element-nvm.h";
+      |                                ^
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchSensorDataOnce':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:707:17: error: 'isModbusUnresponsive' undeclared (first use in this function); did you mean 'ModbusResponse'?
+  707 |                 isModbusUnresponsive = true;
+      |                 ^~~~~~~~~~~~~~~~~~~~
+      |                 ModbusResponse
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:707:17: note: each undeclared identifier is reported only once for each function it appears in
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchSensorDataDifferential':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:787:17: error: 'isModbusUnresponsive' undeclared (first use in this function); did you mean 'ModbusResponse'?
+  787 |                 isModbusUnresponsive = true;
+      |                 ^~~~~~~~~~~~~~~~~~~~
+      |                 ModbusResponse
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:749:15: warning: variable 'waterLevels' set but not used [-Wunused-but-set-variable]
+  749 |         float waterLevels[readingCount];
+      |               ^~~~~~~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchSensorData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:889:17: error: 'isModbusUnresponsive' undeclared (first use in this function); did you mean 'ModbusResponse'?
+  889 |                 isModbusUnresponsive = true;
+      |                 ^~~~~~~~~~~~~~~~~~~~
+      |                 ModbusResponse
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:890:17: error: 'sendSystemDiagnotic' undeclared (first use in this function); did you mean 'sendSystemDiagnostic'?
+  890 |                 sendSystemDiagnotic = true;
+      |                 ^~~~~~~~~~~~~~~~~~~
+      |                 sendSystemDiagnostic
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1103:36: warning: suggest parentheses around assignment used as truth value [-Wparentheses]
+ 1103 |                                 if(transmissionType = 3){
+      |                                    ^~~~~~~~~~~~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchLTCData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1287:91: warning: passing argument 5 of 'HAL_I2C_Mem_Write' makes pointer from integer without a cast [-Wint-conversion]
+ 1287 |          if (HAL_I2C_Mem_Write(&hi2c1, 0x68 << 1, register_address, I2C_MEMADD_SIZE_8BIT, 0x05, 1, HAL_MAX_DELAY) == HAL_OK) {
+      |                                                                                           ^~~~
+      |                                                                                           |
+      |                                                                                           int
+In file included from ../../Core/Inc/stm32wlxx_hal_conf.h:241,
+                 from ../../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_hal.h:29,
+                 from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:266,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_hal_i2c.h:634:67: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'int'
+  634 |                                     uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                          ~~~~~~~~~^~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'SendTxData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:2189:59: warning: pointer targets in passing argument 1 of 'LmHandlerGetTxDatarate' differ in signedness [-Wpointer-sign]
+ 2189 |                                 if(LmHandlerGetTxDatarate(&currentDR) == LORAMAC_HANDLER_SUCCESS){
+      |                                                           ^~~~~~~~~~
+      |                                                           |
+      |                                                           uint8_t * {aka unsigned char *}
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:32:
+../../Middlewares/Third_Party/LoRaWAN/LmHandler/LmHandler.h:419:56: note: expected 'int8_t *' {aka 'signed char *'} but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+  419 | LmHandlerErrorStatus_t LmHandlerGetTxDatarate( int8_t *txDatarate );
+      |                                                ~~~~~~~~^~~~~~~~~~
+At top level:
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:587:16: warning: 'AppLedStateOn' defined but not used [-Wunused-variable]
+  587 | static uint8_t AppLedStateOn = RESET;
+      |                ^~~~~~~~~~~~~
+make: *** [Application/User/LoRaWAN/App/subdir.mk:32: Application/User/LoRaWAN/App/lora_app.o] Error 1
+"make -j8 all" terminated with exit code 2. Build might be incomplete.
+15:40:17 **** Incremental Build of configuration Debug for project LoRaWAN_End_Node ****
+make -j8 all 
+arm-none-eabi-gcc "C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DCORE_CM4 -DUSE_HAL_DRIVER -DSTM32WL55xx -c -I../../Core/Inc -I../../LoRaWAN/App -I../../LoRaWAN/Target -I../../Drivers/STM32WLxx_HAL_Driver/Inc -I../../Drivers/STM32WLxx_HAL_Driver/Inc/Legacy -I../../Utilities/trace/adv_trace -I../../Utilities/misc -I../../Utilities/sequencer -I../../Utilities/timer -I../../Utilities/lpm/tiny_lpm -I../../Middlewares/Third_Party/LoRaWAN/LmHandler/Packages -I../../Drivers/CMSIS/Device/ST/STM32WLxx/Include -I../../Middlewares/Third_Party/LoRaWAN/Crypto -I../../Middlewares/Third_Party/LoRaWAN/Mac/Region -I../../Middlewares/Third_Party/LoRaWAN/Mac -I../../Middlewares/Third_Party/LoRaWAN/LmHandler -I../../Middlewares/Third_Party/LoRaWAN/Utilities -I../../Middlewares/Third_Party/SubGHz_Phy -I../../Middlewares/Third_Party/SubGHz_Phy/stm32_radio_driver -I../../Drivers/CMSIS/Include -I../../Drivers/BSP/STM32WLxx_Nucleo -Og -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Application/User/LoRaWAN/App/lora_app.d" -MT"Application/User/LoRaWAN/App/lora_app.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Application/User/LoRaWAN/App/lora_app.o"
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:44:
+../../Middlewares/Third_Party/LoRaWAN/Mac/LoRaMacCrypto.h:75: warning: "FLASH_BASE" redefined
+   75 | #define FLASH_BASE                              ((uint32_t)0x0803B7FF)
+      | 
+In file included from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:100,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wl55xx.h:928: note: this is the location of the previous definition
+  928 | #define FLASH_BASE              0x08000000UL   /*!< FLASH(up to 256 KB) base address */
+      | 
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:44:
+../../Middlewares/Third_Party/LoRaWAN/Mac/LoRaMacCrypto.h:76: warning: "FLASH_SIZE" redefined
+   76 | #define FLASH_SIZE                              ((uint32_t)0x00080000)
+      | 
+In file included from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:100,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wl55xx.h:934: note: this is the location of the previous definition
+  934 | #define FLASH_SIZE              (((*((uint32_t *)FLASHSIZE_BASE)) & 0xFFFFU) << 10U)
+      | 
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:45:
+../../Core/Inc/project_config.h:11:32: warning: extra tokens at end of #include directive
+   11 | #include "secure-element-nvm.h";
+      |                                ^
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchSensorDataDifferential':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:749:15: warning: variable 'waterLevels' set but not used [-Wunused-but-set-variable]
+  749 |         float waterLevels[readingCount];
+      |               ^~~~~~~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchSensorData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:890:17: error: 'sendSystemDiagnotic' undeclared (first use in this function); did you mean 'sendSystemDiagnostic'?
+  890 |                 sendSystemDiagnotic = true;
+      |                 ^~~~~~~~~~~~~~~~~~~
+      |                 sendSystemDiagnostic
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:890:17: note: each undeclared identifier is reported only once for each function it appears in
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1103:36: warning: suggest parentheses around assignment used as truth value [-Wparentheses]
+ 1103 |                                 if(transmissionType = 3){
+      |                                    ^~~~~~~~~~~~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchLTCData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1287:91: warning: passing argument 5 of 'HAL_I2C_Mem_Write' makes pointer from integer without a cast [-Wint-conversion]
+ 1287 |          if (HAL_I2C_Mem_Write(&hi2c1, 0x68 << 1, register_address, I2C_MEMADD_SIZE_8BIT, 0x05, 1, HAL_MAX_DELAY) == HAL_OK) {
+      |                                                                                           ^~~~
+      |                                                                                           |
+      |                                                                                           int
+In file included from ../../Core/Inc/stm32wlxx_hal_conf.h:241,
+                 from ../../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_hal.h:29,
+                 from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:266,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_hal_i2c.h:634:67: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'int'
+  634 |                                     uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                          ~~~~~~~~~^~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'SendTxData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:2189:59: warning: pointer targets in passing argument 1 of 'LmHandlerGetTxDatarate' differ in signedness [-Wpointer-sign]
+ 2189 |                                 if(LmHandlerGetTxDatarate(&currentDR) == LORAMAC_HANDLER_SUCCESS){
+      |                                                           ^~~~~~~~~~
+      |                                                           |
+      |                                                           uint8_t * {aka unsigned char *}
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:32:
+../../Middlewares/Third_Party/LoRaWAN/LmHandler/LmHandler.h:419:56: note: expected 'int8_t *' {aka 'signed char *'} but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+  419 | LmHandlerErrorStatus_t LmHandlerGetTxDatarate( int8_t *txDatarate );
+      |                                                ~~~~~~~~^~~~~~~~~~
+At top level:
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:587:16: warning: 'AppLedStateOn' defined but not used [-Wunused-variable]
+  587 | static uint8_t AppLedStateOn = RESET;
+      |                ^~~~~~~~~~~~~
+make: *** [Application/User/LoRaWAN/App/subdir.mk:32: Application/User/LoRaWAN/App/lora_app.o] Error 1
+"make -j8 all" terminated with exit code 2. Build might be incomplete.
+15:40:29 **** Incremental Build of configuration Debug for project LoRaWAN_End_Node ****
+make -j8 all 
+arm-none-eabi-gcc "C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DCORE_CM4 -DUSE_HAL_DRIVER -DSTM32WL55xx -c -I../../Core/Inc -I../../LoRaWAN/App -I../../LoRaWAN/Target -I../../Drivers/STM32WLxx_HAL_Driver/Inc -I../../Drivers/STM32WLxx_HAL_Driver/Inc/Legacy -I../../Utilities/trace/adv_trace -I../../Utilities/misc -I../../Utilities/sequencer -I../../Utilities/timer -I../../Utilities/lpm/tiny_lpm -I../../Middlewares/Third_Party/LoRaWAN/LmHandler/Packages -I../../Drivers/CMSIS/Device/ST/STM32WLxx/Include -I../../Middlewares/Third_Party/LoRaWAN/Crypto -I../../Middlewares/Third_Party/LoRaWAN/Mac/Region -I../../Middlewares/Third_Party/LoRaWAN/Mac -I../../Middlewares/Third_Party/LoRaWAN/LmHandler -I../../Middlewares/Third_Party/LoRaWAN/Utilities -I../../Middlewares/Third_Party/SubGHz_Phy -I../../Middlewares/Third_Party/SubGHz_Phy/stm32_radio_driver -I../../Drivers/CMSIS/Include -I../../Drivers/BSP/STM32WLxx_Nucleo -Og -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Application/User/LoRaWAN/App/lora_app.d" -MT"Application/User/LoRaWAN/App/lora_app.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Application/User/LoRaWAN/App/lora_app.o"
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:44:
+../../Middlewares/Third_Party/LoRaWAN/Mac/LoRaMacCrypto.h:75: warning: "FLASH_BASE" redefined
+   75 | #define FLASH_BASE                              ((uint32_t)0x0803B7FF)
+      | 
+In file included from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:100,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wl55xx.h:928: note: this is the location of the previous definition
+  928 | #define FLASH_BASE              0x08000000UL   /*!< FLASH(up to 256 KB) base address */
+      | 
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:44:
+../../Middlewares/Third_Party/LoRaWAN/Mac/LoRaMacCrypto.h:76: warning: "FLASH_SIZE" redefined
+   76 | #define FLASH_SIZE                              ((uint32_t)0x00080000)
+      | 
+In file included from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:100,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wl55xx.h:934: note: this is the location of the previous definition
+  934 | #define FLASH_SIZE              (((*((uint32_t *)FLASHSIZE_BASE)) & 0xFFFFU) << 10U)
+      | 
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:45:
+../../Core/Inc/project_config.h:11:32: warning: extra tokens at end of #include directive
+   11 | #include "secure-element-nvm.h";
+      |                                ^
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchSensorDataDifferential':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:749:15: warning: variable 'waterLevels' set but not used [-Wunused-but-set-variable]
+  749 |         float waterLevels[readingCount];
+      |               ^~~~~~~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchSensorData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1103:36: warning: suggest parentheses around assignment used as truth value [-Wparentheses]
+ 1103 |                                 if(transmissionType = 3){
+      |                                    ^~~~~~~~~~~~~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'fetchLTCData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:1287:91: warning: passing argument 5 of 'HAL_I2C_Mem_Write' makes pointer from integer without a cast [-Wint-conversion]
+ 1287 |          if (HAL_I2C_Mem_Write(&hi2c1, 0x68 << 1, register_address, I2C_MEMADD_SIZE_8BIT, 0x05, 1, HAL_MAX_DELAY) == HAL_OK) {
+      |                                                                                           ^~~~
+      |                                                                                           |
+      |                                                                                           int
+In file included from ../../Core/Inc/stm32wlxx_hal_conf.h:241,
+                 from ../../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_hal.h:29,
+                 from ../../Drivers/CMSIS/Device/ST/STM32WLxx/Include/stm32wlxx.h:266,
+                 from ../../Core/Inc/platform.h:38,
+                 from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:22:
+../../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_hal_i2c.h:634:67: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'int'
+  634 |                                     uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                          ~~~~~~~~~^~~~~
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c: In function 'SendTxData':
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:2189:59: warning: pointer targets in passing argument 1 of 'LmHandlerGetTxDatarate' differ in signedness [-Wpointer-sign]
+ 2189 |                                 if(LmHandlerGetTxDatarate(&currentDR) == LORAMAC_HANDLER_SUCCESS){
+      |                                                           ^~~~~~~~~~
+      |                                                           |
+      |                                                           uint8_t * {aka unsigned char *}
+In file included from C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:32:
+../../Middlewares/Third_Party/LoRaWAN/LmHandler/LmHandler.h:419:56: note: expected 'int8_t *' {aka 'signed char *'} but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+  419 | LmHandlerErrorStatus_t LmHandlerGetTxDatarate( int8_t *txDatarate );
+      |                                                ~~~~~~~~^~~~~~~~~~
+At top level:
+C:/Users/Owner/Music/workspace_waterlevel20m-final/LoRaWAN_End_Node/LoRaWAN/App/lora_app.c:587:16: warning: 'AppLedStateOn' defined but not used [-Wunused-variable]
+  587 | static uint8_t AppLedStateOn = RESET;
+      |                ^~~~~~~~~~~~~
+arm-none-eabi-gcc -o "LoRaWAN_End_Node.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Owner\Music\workspace_waterlevel20m-final\LoRaWAN_End_Node\STM32CubeIDE\STM32WL55JCIX_FLASH.ld" --specs=nosys.specs -Wl,-Map="LoRaWAN_End_Node.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: LoRaWAN_End_Node.elf
+ 
+arm-none-eabi-size  LoRaWAN_End_Node.elf 
+arm-none-eabi-objdump -h -S LoRaWAN_End_Node.elf  > "LoRaWAN_End_Node.list"
+arm-none-eabi-objcopy  -O ihex LoRaWAN_End_Node.elf  "LoRaWAN_End_Node.hex"
+   text	   data	    bss	    dec	    hex	filename
+ 126240	    832	  13896	 140968	  226a8	LoRaWAN_End_Node.elf
+arm-none-eabi-objcopy  -O binary LoRaWAN_End_Node.elf  "LoRaWAN_End_Node.bin"
+Finished building: default.size.stdout
+ 
+Finished building: LoRaWAN_End_Node.hex
+Finished building: LoRaWAN_End_Node.bin
+ 
+ 
+Finished building: LoRaWAN_End_Node.list
+ 

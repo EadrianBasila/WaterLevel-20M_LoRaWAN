@@ -75,7 +75,7 @@ int transmissionType			= 0;		// 0: Scheduled	; 1: Unscheduled ; 2: System Diagno
 bool skipScheduledTransmission	= false;
 bool sendSystemDiagnostic		= false;
 bool isLevelBreached			= false;
-bool isModbusUnresponsive			= false;
+bool isModbusDefective			= false;
 uint8_t systemDiagnostic 		= 0;
 
 //! LTC Variables
@@ -216,10 +216,10 @@ void checkModbus(void){
 	    }
 	}
 	if (defective >= 10){
-		isModbusUnresponsive = true;
+		isModbusDefective = true;
 		 APP_LOG(TS_OFF, VLEVEL_M, "Error: Modbus Sensor Unresponsive\r\n");
 	} else {
-		isModbusUnresponsive = false;
+		isModbusDefective = false;
 		APP_LOG(TS_OFF, VLEVEL_M,  "Modbus Sensor is Responsive\r\n");
 	}
 }
@@ -887,7 +887,7 @@ void fetchSensorData(void) {
 
 	if(modbusUnresponsiveCount >= 3){
 		isModbusUnresponsive = true;
-		sendSystemDiagnostic = true;
+		sendSystemDiagnotic = true;
 		APP_LOG(TS_OFF, VLEVEL_M, "Modbus is Unresponsive.\r\n");
 	}
 
@@ -1105,7 +1105,7 @@ void fetchSensorData(void) {
 					int measureMeth  = measurementMethod == 0 ? 0 : 1;
 					int samplingMeth = samplingMethod == 0 ? 0 : 1;
 					int threshMeth	 = continuousMode == true ? 1 : 0;
-					int modbusError  = isModbusUnresponsive == true ? 1 : 0;
+					int modbusError  = isModbusDefective == true ? 1 : 0;
 					int levelBreach  = isLevelBreached == true ? 1 : 0;
 
 					systemDiagnostic = (isZeroCalib << 5)  |
@@ -2221,7 +2221,7 @@ static void SendTxData(void)
 					int measureMeth  = measurementMethod == 0 ? 0 : 1;
 					int samplingMeth = samplingMethod == 0 ? 0 : 1;
 					int threshMeth	 = continuousMode == true ? 1 : 0;
-					int modbusError  = isModbusUnresponsive == true ? 1 : 0;
+					int modbusError  = isModbusDefective == true ? 1 : 0;
 					int levelBreach  = isLevelBreached == true ? 1 : 0;
 
 					systemDiagnostic = (isZeroCalib << 5) |

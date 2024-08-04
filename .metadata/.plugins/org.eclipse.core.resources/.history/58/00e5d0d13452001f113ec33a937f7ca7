@@ -887,7 +887,7 @@ void fetchSensorData(void) {
 
 	if(modbusUnresponsiveCount >= 3){
 		isModbusUnresponsive = true;
-		sendSystemDiagnostic = true;
+		sendSystemDiagnotic = true;
 		APP_LOG(TS_OFF, VLEVEL_M, "Modbus is Unresponsive.\r\n");
 	}
 
