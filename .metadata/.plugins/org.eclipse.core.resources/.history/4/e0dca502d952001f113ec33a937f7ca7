@@ -47,8 +47,8 @@ int TRANSMIT_INTERVAL_MS        = 900000; 	// 15 minutes in milliseconds
 //int SAMPLE_INTERVAL_MS          = 60000; //= 180000;  	// 3 minutes in milliseconds
 //int TRANSMIT_INTERVAL_MS        = 60000; //= 900000; 	// 15 minutes in milliseconds
 
-float thresholdLevelHigh		= 2.0;
-float thresholdLevelLow			= 1.5;
+float thresholdLevelHigh		= 15.0;
+float thresholdLevelLow			= 0.0;
 uint16_t confUplinkCounter 		= 0;
 int samplingMethod				= 0;
 int measurementMethod			= 0;

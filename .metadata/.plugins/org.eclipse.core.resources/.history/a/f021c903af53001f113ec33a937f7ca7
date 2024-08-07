@@ -640,7 +640,7 @@ SecureElementStatus_t SecureElementInit( SecureElementNvmData_t *nvm )
 		MW_LOG( TS_OFF, VLEVEL_M, "###### Uplinks before Confirmed Uplink: %u \r\n", MAX_UPLINK_BEFORE_CONFIRMED);
 		HAL_Delay(100);
 
-		if(FlashNVM.pwxSamplingCount != 0 && FlashNVM.pwxSamplingCount < 8192){
+		if(FlashNVM.pwxSamplingCount != 0 && FlashNVM.pwxSamplingCount >= 8192){
 			MAX_WATER_LEVEL_SAMPLES = FlashNVM.pwxSamplingCount;
 		} else {
 			MAX_WATER_LEVEL_SAMPLES = 5;
@@ -668,7 +668,7 @@ SecureElementStatus_t SecureElementInit( SecureElementNvmData_t *nvm )
 //		}
 //		MW_LOG( TS_OFF, VLEVEL_M, "###### Water Level Threshold: %u \r\n", thresholdLevel);
 
-		if(FlashNVM.pwxWaterLevelThresholdHigh > 0 && FlashNVM.pwxWaterLevelThresholdHigh != 65535 && FlashNVM.pwxWaterLevelThresholdHigh < 255){
+		if(FlashNVM.pwxWaterLevelThresholdHigh > 0 && FlashNVM.pwxWaterLevelThresholdHigh != 65535){
 			thresholdLevelHigh = FlashNVM.pwxWaterLevelThresholdHigh;
 		}else{
 			thresholdLevelHigh = 2.0;
@@ -676,7 +676,7 @@ SecureElementStatus_t SecureElementInit( SecureElementNvmData_t *nvm )
 		MW_LOG( TS_OFF, VLEVEL_M, "###### Water Level High Threshold: %u \r\n", FlashNVM.pwxWaterLevelThresholdHigh);
 		HAL_Delay(100);
 
-		if(FlashNVM.pwxWaterLevelThresholdLow > 0 && FlashNVM.pwxWaterLevelThresholdLow != 65535 && FlashNVM.pwxWaterLevelThresholdLow < 255){
+		if(FlashNVM.pwxWaterLevelThresholdLow > 0 && FlashNVM.pwxWaterLevelThresholdLow != 65535){
 			thresholdLevelLow = FlashNVM.pwxWaterLevelThresholdLow;
 		}else{
 			thresholdLevelLow = 1.5;

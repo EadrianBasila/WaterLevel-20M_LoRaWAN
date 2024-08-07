@@ -966,9 +966,8 @@ void fetchSensorData(void) {
 //    hasJoined = false; // for redundancy
 
     if (continuousMode) {
-        //if (waterLevel >= thresholdLevelHigh || waterLevel <= thresholdLevelLow) { // Un-comment this if Low Threshold is needed
-        if (waterLevel >= thresholdLevelHigh) {
-        	APP_LOG(TS_OFF, VLEVEL_M, "Water Level is out of threshold range! \r\n");
+        if (waterLevel >= thresholdLevelHigh || waterLevel <= thresholdLevelLow) { // Un-comment this if Low Threshold is needed
+            APP_LOG(TS_OFF, VLEVEL_M, "Water Level is out of threshold range! \r\n");
             TRANSMIT_INTERVAL_MS = 180000;
             APP_LOG(TS_OFF, VLEVEL_M, "Transmission Cycle: %d seconds \r\n", TRANSMIT_INTERVAL_MS / 1000);
             MAX_WATER_LEVEL_SAMPLES = 1;
@@ -1015,9 +1014,8 @@ void fetchSensorData(void) {
             }
         }
     } else { // continuousMode == false
-        //if (waterLevel >= thresholdLevelHigh || waterLevel <= thresholdLevelLow) { // Un-comment this if Low Threshold is needed
-    	if (waterLevel >= thresholdLevelHigh) {
-    		APP_LOG(TS_OFF, VLEVEL_M, "Water Level is out of threshold range! \r\n");
+        if (waterLevel >= thresholdLevelHigh || waterLevel <= thresholdLevelLow) { // Un-comment this if Low Threshold is needed
+            APP_LOG(TS_OFF, VLEVEL_M, "Water Level is out of threshold range! \r\n");
             TRANSMIT_INTERVAL_MS = 180000;
             APP_LOG(TS_OFF, VLEVEL_M, "Transmission Cycle: %d seconds \r\n", TRANSMIT_INTERVAL_MS / 1000);
             MAX_WATER_LEVEL_SAMPLES = 1;
@@ -1066,7 +1064,6 @@ void fetchSensorData(void) {
 
 	if(sendUnscheduledTransmission == true){
 		while(sendUnscheduledTransmission!= false){
-			LmHandlerErrorStatus_t status = LORAMAC_HANDLER_ERROR;
 			 HAL_Delay(100);
 			  if (LmHandlerIsBusy() == false)
 			  {
@@ -1135,13 +1132,7 @@ void fetchSensorData(void) {
 				  HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_RESET); /* LED_RED */
 				}
 
-				status = LmHandlerSend(&AppData, LmHandlerParams.IsTxConfirmed, false);
-				if(status == 0){
-					APP_LOG(TS_ON, VLEVEL_L, "### Resetting Watchdog Timer! \r\n");
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
-					HAL_Delay(50);
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
-				}
+				LmHandlerSend(&AppData, LmHandlerParams.IsTxConfirmed, false);
 				sendUnscheduledTransmission = false;
 			  }
 			APP_LOG(TS_OFF, VLEVEL_M, "[!]  LM HANDLER IS BUSY! \r\n");
@@ -1408,7 +1399,7 @@ void LoRaWAN_Init(void)
   APP_LOG(TS_OFF, VLEVEL_M, " |  __/ (_| | (__|   <  __/ |_ \\ V  V / (_) | |   >  <   | || | | | (__ _  \r\n");
   APP_LOG(TS_OFF, VLEVEL_M, " |_|   \\__,_|\\___|_|\\_\\___|\\__| \\_/\\_/ \\___/|_|  /_/\\_\\ |___|_| |_|\\___(_) \r\n");
   APP_LOG(TS_OFF, VLEVEL_M, "\r\n");
-  APP_LOG(TS_OFF, VLEVEL_M, " Firmware: Water Level 20M 	Ver.: 1.1.1		Rev. Date: 8-6-24\r\n");
+  APP_LOG(TS_OFF, VLEVEL_M, " Firmware: Water Level 20M 	Ver.: 1.0.1		Rev. Date: 8-2-24\r\n");
   APP_LOG(TS_OFF, VLEVEL_M, "\r\n");
 
   waterLevelSamples = (float*)malloc(sizeof(int)*MAX_WATER_LEVEL_SAMPLES);
@@ -1858,12 +1849,12 @@ static void OnRxData(LmHandlerAppData_t *appData, LmHandlerRxParams_t *params)
 
 		            		if (FLASH_IF_Read(&FlashNVM, LORAWAN_NVM_BASE_ADDRESS, sizeof(FlashNVM)) == FLASH_IF_OK) {
 
-								FlashNVM.pwxWaterLevelThresholdHigh = (uint16_t)2.0;
-								thresholdLevelHigh = 2.0;
+								FlashNVM.pwxWaterLevelThresholdHigh = (uint16_t)15.0;
+								thresholdLevelHigh = 15.0;
 								HAL_Delay(100);
 
-								FlashNVM.pwxWaterLevelThresholdLow = (uint16_t)1.5;
-								thresholdLevelLow = 1.5;
+								FlashNVM.pwxWaterLevelThresholdLow = (uint16_t)0.0;
+								thresholdLevelLow = 0.0;
 								HAL_Delay(100);
 
 								FlashNVM.pwxTxInterval = (uint64_t)900000;
@@ -2174,7 +2165,7 @@ static void SendTxData(void)
 		if(measurementMethod == 0){
 			fetchSensorData();
 		} else {
-			fetchSensorDataDifferential();
+			fetchSensorData();
 		}
 
 		lastSampleTime = currentTime;
@@ -2294,13 +2285,6 @@ static void SendTxData(void)
 					status = LmHandlerSend(&AppData, LmHandlerParams.IsTxConfirmed, false);
 					APP_LOG(TS_ON, VLEVEL_L, "%u Remaining Uplink/s before sending Confirmed Uplink \r\n", (MAX_UPLINK_BEFORE_CONFIRMED-confUplinkCounter));
 					confUplinkCounter += 1;
-				}
-
-				if(status == 0){
-					APP_LOG(TS_ON, VLEVEL_L, "### Resetting Watchdog Timer! \r\n");
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
-					HAL_Delay(50);
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
 				}
 
 				if((confUplinkCounter - MAX_UPLINK_BEFORE_CONFIRMED) > 10){

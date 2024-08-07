@@ -42,6 +42,7 @@ int MAX_UPLINK_BEFORE_CONFIRMED = 4; //every hour
 int MAX_WATER_LEVEL_SAMPLES 	= 5;
 int SAMPLE_INTERVAL_MS          = 180000;  	// 3 minutes in milliseconds
 int TRANSMIT_INTERVAL_MS        = 900000; 	// 15 minutes in milliseconds
+bool updateWatchdog				= false;
 
 //int MAX_WATER_LEVEL_SAMPLES 	= 1;	 //= 5;
 //int SAMPLE_INTERVAL_MS          = 60000; //= 180000;  	// 3 minutes in milliseconds
